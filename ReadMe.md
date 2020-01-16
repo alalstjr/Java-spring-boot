@@ -9,17 +9,17 @@
 - [2. SpringBootApplication 역할](#SpringBootApplication-역할)
     - [1. Application 프로젝트 실행 원리](#Application-프로젝트-실행-원리)
     - [2. @ComponentScan](#@ComponentScan)
-- [3. 자동 설정 만들기 1부](#자동-설정-만들기-1부)
+- [3. 자동 설정 만들기 1부](#자동-설정-만들기-1부)
     - [1. @Configuration 파일 작성](#@Configuration-파일-작성)
     - [2. 배포용 jar 생성](#배포용-jar-생성)
     - [3. 배포용 jar Bean 실행](#배포용-jar-Bean-실행)
-- [4. 자동 설정 만들기 2부](#자동-설정-만들기-2부)
+- [4. 자동 설정 만들기 2부](#자동-설정-만들기-2부)
     - [1. 프로젝트에 Bean 등록이 중첩될 경우 덮어쓰기 방지](#프로젝트에-Bean-등록이-중첩될-경우-덮어쓰기-방지)
     - [2. @ConditionalOnMissingBean](#@ConditionalOnMissingBean)
     - [3. properties 활용한 Bean 등록없이 값 수정하기](#properties-활용한-Bean-등록없이-값-수정하기)
         - [1. @ConfigurationProperties](#@ConfigurationProperties)
         - [2. @EnableConfigurationProperties](#@EnableConfigurationProperties)
-
+- [5. 내장 웹서버 이해](#내장-웹서버-이해)
 
 # Spring Boot 란 무엇인가
 
@@ -209,6 +209,7 @@ public class Application {
 ~~~
 
 `좀 더 빠르게 작동하도록 WebApplicationType.NONE 설정`
+WebApplicationType.NONE 설정을 하므로서 `Spring Boot가 웹으로 실행이 안되도록` 하였습니다.
 
 Holoman Bean 존재여부 파악을 위해서 Class 생성
 
@@ -384,3 +385,103 @@ Holoman{name='properties', howLong=100}
 ~~~
 
 properties 값을 가져온것을 확인할 수 있습니다.
+
+# 내장 웹서버 이해
+
+`Spring Boot 자체가 서버가 아니라` 내장 서블릿 컨테이너를 쉽게 사용하도록 `도와주는 툴` 입니다.
+
+의존성 spring boot starter 추가시 내장 톰켓이 추가된것을 확인할 수 있습니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.2.RELEASE'
+~~~
+
+Java Code 로 Tomcat을 만들 수 있습니다.
+
+## 톰캣 객체생성 & 포트 설정 & 톰캣에 컨텍스트 생성
+
+~~~
+public class Application {
+    public static void main(String[] args) throws LifecycleException {
+        Tomcat tomcat = new Tomcat();
+        tomcat.setPort(8080);
+
+        Context context= tomcat.addContext("/", "/");
+        tomcat.start();
+    }
+}
+~~~
+
+## 서블릿 만들기
+
+~~~
+public class Application {
+    public static void main(String[] args) throws LifecycleException {
+        Tomcat tomcat = new Tomcat();
+        tomcat.setPort(8080);
+
+        Context context = tomcat.addContext("/", "/");
+
+        HttpServlet servlet = new HttpServlet() {
+            @Override
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                PrintWriter writer = resp.getWriter();
+                writer.println("<html><head><title>");
+                writer.println("Hey, Tomcat");
+                writer.println("</title></head>");
+                writer.println("<body><h1>Hello Tomcat</h1></body>");
+                writer.println("</html>");
+            }
+        };
+
+        String servletName = "helloServlet";
+        tomcat.addServlet("/", servletName, servlet);
+        context.addServletMappingDecoded("/hello", servletName);
+
+        tomcat.start();
+        tomcat.getServer().await();
+    }
+}
+~~~
+
+context.addServletMappingDecoded("/", servletName);
+hello 요청이 오면은 helloServlet 의 servlet를 보여주도록 합니다. 
+
+이렇게 Spring Boot 를 사용하지 않고 내장 Tomcat으로 서버를 가동하는것을 해보았습니다.
+
+## Spring Boot 서버 자동설정 동작확인
+
+> External Libraries > spring-boot-autoconfigration > META-INF > spring.factories
+
+자동 설정 파일들이 존재합니다.
+이중에서 처음 볼것은 ServletWebServerFactoryAutoConfiguration
+
+~~~
+@ConditionalOnClass(ServletRequest.class)
+// ServletRequest.class 존재할 경우 사용
+@Import({톰캣, 제티, 언더토우})
+// 다른 Configration 사용하는 어노테이션
+~~~
+
+이중에서 톰캣을 들어가 확인하겠습니다.
+
+ServletWebServerFactoryConfigration
+EmbeddedTomcat
+TomcatServletWebServerFactory 실행
+
+TomcatServletWebServerFactory 내부에서 무엇이 일어나는지 확인해보면
+Tomcat이 설정되고 만들어지는 과정이 일어나는 것을 확인할 수 있습니다.
+
+이것으로 확인할 수 있는것은 ServletWebServerFactoryAutoConfiguration 클래스는 내장 설정파일을 만드는 것인것을 확인할 수 있습니다.
+
+이 모든 과정을 보다 상세히 또 유연하고 설절하고 실행해주는게 바로 스프링 부트의 자동 설정.
+
+- ServletWebServerFactoryAutoConfiguration (서블릿 웹 서버 생성)
+    - TomcatServletWebServerFactoryCustomizer (서버 커스터마이징)
+- DispatcherServletAutoConfiguration
+    - 서블릿 만들고 등록
+
+서블릿 웹 서버 생성 클래스와 서블릿 만들고 등록하는 클래스가 따로 존재하는 이유는 서블릿 컨테이너는 pom.xml에 따라서 다 달라질 수 있습니다. 
+서블릿은 변하지 않습니다. 그래서 둘은 분리 되어 있습니다.
+
+DispatcherServlet 은 내가 어떠한 서블릿 컨테이너를 사용하던 상관없이 만든 후 지금 있는 서블릿 컨테이너에 등록을 하는 과정이 이 안에서 일어납니다.
