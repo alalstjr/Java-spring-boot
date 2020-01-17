@@ -20,6 +20,18 @@
         - [1. @ConfigurationProperties](#@ConfigurationProperties)
         - [2. @EnableConfigurationProperties](#@EnableConfigurationProperties)
 - [5. 내장 웹서버 이해](#내장-웹서버-이해)
+    - [1. 톰캣 객체생성 & 포트 설정 & 톰캣에 컨텍스트 생성](#톰캣-객체생성-&-포트-설정-&-톰캣에-컨텍스트-생성)
+    - [2. 서블릿 만들기](#서블릿-만들기)
+    - [3. Spring Boot 서버 자동설정 동작확인](#Spring-Boot-서버-자동설정-동작확인)
+- [6. 내장 웹 서버 응용](#내장-웹-서버-응용)
+    - [1. jetty 내장 웹서버 변경](#jetty-내장-웹서버-변경)
+    - [2. undertow 내장 웹서버 변경](#undertow-내장-웹서버-변경)
+    - [3. 웹서버 사용하지 않기](#웹서버-사용하지-않기)
+    - [4. 웹서버 PORT 변경](#웹서버-PORT-변경)
+    - [5. Discover the HTTP Port at Runtime](#Discover-the-HTTP-Port-at-Runtime)
+    - [6. HTTPS와 HTTP2](#HTTPS와-HTTP2)
+    - [7. HTTPS & HTTP 둘다 적용하기](#HTTPS-&-HTTP-둘다-적용하기)
+    - [8. HTTP2 연결](#HTTP2-연결)
 
 # Spring Boot 란 무엇인가
 
@@ -485,3 +497,223 @@ Tomcat이 설정되고 만들어지는 과정이 일어나는 것을 확인할 �
 서블릿은 변하지 않습니다. 그래서 둘은 분리 되어 있습니다.
 
 DispatcherServlet 은 내가 어떠한 서블릿 컨테이너를 사용하던 상관없이 만든 후 지금 있는 서블릿 컨테이너에 등록을 하는 과정이 이 안에서 일어납니다.
+
+# 내장 웹 서버 응용
+
+Gradle 의존성 변경
+
+## jetty 내장 웹서버 변경
+
+~~~
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.2.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure-processor', version: '2.2.2.RELEASE'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: '2.2.2.RELEASE'
+}
+
+configurations {
+    compile.exclude module: 'spring-boot-starter-tomcat'
+}
+~~~
+
+configurations 으로 tomcat 의존성을 제외 시키고 jetty 의존성을 추가시킵니다.
+
+> /src/main/java/me/whiteship/Application.class
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+~~~
+
+별 설정없이 Spring Boot Start 해주면 jetty 8080 서버로 정상적으로 연결 실행되는것을 확인할 수 있습니다.
+
+~~~
+[main] me.whiteship.Application                 : Starting Application on gimminscBookPro with PID 1255 (started by kimminseok in /Users/kimminseok/Documents/git-repository/Java-spring-boot/내장 웹 서버 응용/project)
+[main] me.whiteship.Application                 : No active profile set, falling back to default profiles: default
+[main] org.eclipse.jetty.util.log               : Logging initialized @1421ms to org.eclipse.jetty.util.log.Slf4jLog
+[main] o.s.b.w.e.j.JettyServletWebServerFactory : Server initialized with port: 8080
+[main] org.eclipse.jetty.server.Server          : jetty-9.4.24.v20191120; built: 2019-11-20T21:37:49.771Z; git: 363d5f2df3a8a28de40604320230664b9c793c16; jvm 11.0.5+10-b520.17
+[main] o.e.j.s.h.ContextHandler.application     : Initializing Spring embedded WebApplicationContext
+[main] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 731 ms
+[main] org.eclipse.jetty.server.session         : DefaultSessionIdManager workerName=node0
+[main] org.eclipse.jetty.server.session         : No SessionScavenger set, using defaults
+[main] org.eclipse.jetty.server.session         : node0 Scavenging every 660000ms
+[main] o.e.jetty.server.handler.ContextHandler  : Started o.s.b.w.e.j.JettyEmbeddedWebAppContext@351f2244{application,/,[file:///private/var/folders/tw/z0nxsbm95rl8h8gw78mzxh4h0000gn/T/jetty-docbase.10507278183051399048.8080/],AVAILABLE}
+[main] org.eclipse.jetty.server.Server          : Started @1633ms
+[main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+[main] o.e.j.s.h.ContextHandler.application     : Initializing Spring DispatcherServlet 'dispatcherServlet'
+[main] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+[main] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+[main] o.e.jetty.server.AbstractConnector       : Started ServerConnector@675ffd1d{HTTP/1.1,[http/1.1]}{0.0.0.0:8080}
+[main] o.s.b.web.embedded.jetty.JettyWebServer  : Jetty started on port(s) 8080 (http/1.1) with context path '/'
+[main] me.whiteship.Application                 : Started Application in 1.439 seconds (JVM running for 1.875)
+~~~
+
+## undertow 내장 웹서버 변경
+
+~~~
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.2.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure-processor', version: '2.2.2.RELEASE'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: '2.2.2.RELEASE'
+}
+
+configurations {
+    compile.exclude module: 'spring-boot-starter-tomcat'
+}
+~~~
+
+undertow 의존성을 추가합니다.
+
+## 웹서버 사용하지 않기
+
+의존성에 기본적으로 웹 관련된 기술이 추가되어 있다면 Spring Boot는 웹 에플리케이션으로 만들려고 시도합니다.
+
+- main run type 설정
+Spring Boot Web Starter 를 사용하지 않으려면 main class 의 run type 을 None 으로 설정하는 방법이 있으며
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(Application.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+        application.run(args);
+    }
+}
+~~~
+
+- application.properties 설정 
+application.properties 에서 설정하는 방법도 있습니다.
+
+~~~
+spring.main.web-application-type=none
+~~~
+
+## 웹서버 PORT 변경
+
+- application.properties 설정
+
+~~~
+server.port = 7070
+~~~
+
+랜덤 포트로 설정할경우에는 0 으로 해주면 됩니다.
+
+## Discover the HTTP Port at Runtime
+
+런타임시 HTTP 포트 직접 확인하는 방법
+
+Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-user-a-random-unassigned-http-port]
+
+> src/main/java/me/whiteship/PortListener.class
+
+~~~
+@Component
+public class PortListener implements ApplicationListener<ServletWebServerInitializedEvent> {
+    @Override
+    public void onApplicationEvent(ServletWebServerInitializedEvent event) {
+        // PORT 정보를 알아내는 방법
+        // Web Application Context 정보를 가져옵니다.
+        ServletWebServerApplicationContext context = event.getApplicationContext();
+        int                                result  = context.getWebServer().getPort();
+
+        System.out.println(result);
+    }
+}
+~~~
+
+ServletWebServerInitializedEvent 이벤트는 웹서버가 초기화가 되면 
+onApplicationEvent 이벤트 리스너가 호출이 됩니다.
+
+## HTTPS와 HTTP2
+
+Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-ssl]
+
+HTTP & SSL - [https://opentutorials.org/course/228/4894]
+
+generate-keystore.sh - [https://gist.github.com/keesun/f93f0b83d7232137283450e08a53c4fd]
+
+~~~
+keytool -genkey -alias tomcat -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 4000
+~~~
+
+파일 keystore.p12 생성 됩니다. 이것으로 셋팅을 시작합니다.
+
+- application.properties 설정
+
+~~~
+server.ssl.key-store = keystore.p12
+server.ssl.key-store-password = cmd4515
+server.ssl.keyStoreType = PKCS12
+server.ssl.keyAlias = tomcat
+~~~
+
+> curl -I -k --http2 https://localhost:8080
+
+응답 확인하면 정상으로 접근 합니다.
+
+## HTTPS & HTTP 둘다 적용하기
+
+HTTP 커넥터는 코딩으로 설정하기 - [https://github.com/spring-projects/spring-boot/tree/v2.0.3.RELEASE/spring-boot-samples/spring-boot-sample-tomcat-multi-connectors]
+
+HTTPS 를 적용하고 나면 HTTP 연결은 자동으로 끈키게 됩니다.
+이유는 HTTP 커넥터는 하나만 존재하는데 그곳에 HTTPS 를 적용해서 HTTP 자동으로 끈키게 되는것입니다.
+이를 설정하는 방법의 예제
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+    @Bean
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addAdditionalTomcatConnectors(createStandardConnector());
+        return tomcat;
+    }
+
+    private Connector createStandardConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        connector.setPort(8080);
+        return connector;
+    }
+}
+~~~
+
+- application.properties 설정 추가
+
+~~~
+server.port= 8443
+~~~
+
+이제 8080 PORT 접근시 HTTP 접근이 가능하고
+8443 PORT 접근시 HTTPS 접근이 가능합니다.
+한번에 두개 접근이 가능하도록 하였습니다.
+
+## HTTP2 연결
+
+HTTP2를 사용하려면 SSL 설정은 기본적으로 되어있어야 합니다.
+
+Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-http2]
+
+- undertow
+
+undertow 경우 HTTP2 설정방법은 간단합니다.
+
+- application.properties 설정
+
+~~~
+server.http2.enabled=true
+~~~
+
