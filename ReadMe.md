@@ -32,6 +32,12 @@
     - [6. HTTPS와 HTTP2](#HTTPS와-HTTP2)
     - [7. HTTPS & HTTP 둘다 적용하기](#HTTPS-&-HTTP-둘다-적용하기)
     - [8. HTTP2 연결](#HTTP2-연결)
+- [7. 스프링 부트 활용 1](#스프링-부트-활용-1)
+    - [1. SpringApplication](#SpringApplication)
+    - [2. 배너](#배너)
+        - [1. 만약 배너를 사용하지 않으려면](#만약-배너를-사용하지-않으려면)
+        - [2. 베너 커스텀마이징](#베너-커스텀마이징)
+        - [3. SpringApplicationBuilder로 빌더 패턴 사용 가능](#SpringApplicationBuilder로-빌더-패턴-사용-가능)
 
 # Spring Boot 란 무엇인가
 
@@ -612,7 +618,7 @@ server.port = 7070
 
 런타임시 HTTP 포트 직접 확인하는 방법
 
-Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-user-a-random-unassigned-http-port]
+[Discover the HTTP Port at Runtime](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-user-a-random-unassigned-http-port)
 
 > src/main/java/me/whiteship/PortListener.class
 
@@ -636,11 +642,11 @@ onApplicationEvent 이벤트 리스너가 호출이 됩니다.
 
 ## HTTPS와 HTTP2
 
-Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-ssl]
+[Configure SSL](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-ssl)
 
-HTTP & SSL - [https://opentutorials.org/course/228/4894]
+[HTTP & SSL](https://opentutorials.org/course/228/4894)
 
-generate-keystore.sh - [https://gist.github.com/keesun/f93f0b83d7232137283450e08a53c4fd]
+[generate-keystore.sh](https://gist.github.com/keesun/f93f0b83d7232137283450e08a53c4fd)
 
 ~~~
 keytool -genkey -alias tomcat -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 4000
@@ -663,7 +669,7 @@ server.ssl.keyAlias = tomcat
 
 ## HTTPS & HTTP 둘다 적용하기
 
-HTTP 커넥터는 코딩으로 설정하기 - [https://github.com/spring-projects/spring-boot/tree/v2.0.3.RELEASE/spring-boot-samples/spring-boot-sample-tomcat-multi-connectors]
+[HTTP 커넥터는 코딩으로 설정하기](https://github.com/spring-projects/spring-boot/tree/v2.0.3.RELEASE/spring-boot-samples/spring-boot-sample-tomcat-multi-connectors)
 
 HTTPS 를 적용하고 나면 HTTP 연결은 자동으로 끈키게 됩니다.
 이유는 HTTP 커넥터는 하나만 존재하는데 그곳에 HTTPS 를 적용해서 HTTP 자동으로 끈키게 되는것입니다.
@@ -705,7 +711,7 @@ server.port= 8443
 
 HTTP2를 사용하려면 SSL 설정은 기본적으로 되어있어야 합니다.
 
-Spring Document - [https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-http2]
+[Configure HTTP/2](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-configure-http2)
 
 - undertow
 
@@ -717,3 +723,100 @@ undertow 경우 HTTP2 설정방법은 간단합니다.
 server.http2.enabled=true
 ~~~
 
+# 스프링 부트 활용 1
+
+## SpringApplication
+
+기존 Spring Boot 실행 코드
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+~~~
+
+이렇게 설정하여 살행하게 되면 `Spring Application 에서 제공하는 기능`을 사용하기 어렵습니다.
+
+인스턴스를 만들어서 run 하는 방법으로 사용하도록 합니다.
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(Application.class);
+        app.run(args);
+    }
+}
+~~~
+
+## 배너
+
+- [Customizing the Banner](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-banner)
+
+~~~
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v2.2.2.RELEASE)
+~~~
+
+Spring Boot 실행시 출력되는 배너를 수정할 수 있습니다.
+
+> /resources/banner.txt
+
+~~~
+===========================
+    JJunpro Test v0.0.0
+===========================
+~~~
+
+Spring Document 참고하여 기능을 활용하면
+
+> /resources/banner.txt
+
+~~~
+===========================
+    JJunpro Test ${spring-boot.version}
+===========================
+~~~
+
+Spring 버전을 출력하도록 할수도 있습니다.
+
+### 만약 배너를 사용하지 않으려면
+
+~~~
+app.setBannerMode(Banner.Mode.OFF);
+~~~
+
+### 베너 커스텀마이징
+
+~~~
+app.setBanner((environment, sourceClass, out) -> {
+    out.println("===========");
+    out.println("Edit Banner");
+    out.println("===========");
+});
+~~~
+
+베너가 출력되는 순서는 txt 파일 > Code 순으로 txt 파일이 우선순위가 높습니다.
+
+### SpringApplicationBuilder로 빌더 패턴 사용 가능
+
+[Fluent Builder API](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-fluent-builder-api)
+
+~~~
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        new SpringApplicationBuilder()
+                .sources(Application.class)
+                .run(args);
+    }
+}
+~~~
