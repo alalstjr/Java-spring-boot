@@ -38,6 +38,11 @@
         - [1. 만약 배너를 사용하지 않으려면](#만약-배너를-사용하지-않으려면)
         - [2. 베너 커스텀마이징](#베너-커스텀마이징)
         - [3. SpringApplicationBuilder로 빌더 패턴 사용 가능](#SpringApplicationBuilder로-빌더-패턴-사용-가능)
+- [8. SpringApplication 2부](#SpringApplication-2부)
+    - [1. ApplicationEvent 등록](#ApplicationEvent-등록)
+    - [2. WebApplicationType 설정](#WebApplicationType-설정)
+    - [3. 애플리케이션 아규먼트 사용하기](#애플리케이션-아규먼트-사용하기)
+    - [4. 애플리케이션 실행한 뒤 뭔가 실행하고 싶을 때](#애플리케이션-실행한-뒤-뭔가-실행하고-싶을-때)
 
 # Spring Boot 란 무엇인가
 
@@ -820,3 +825,121 @@ public class Application {
     }
 }
 ~~~
+
+# SpringApplication 2부
+
+[Application Events and Listeners](#https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-application-events-and-listeners)
+
+## ApplicationEvent 등록
+
+Spring Boot 시작 할때 실행되는 이벤트 리스너
+ApplicationContext를 만들기 전에 사용하는 리스너는 @Bean으로 등록할 수 없다.
+
+> SampleListener.class
+
+~~~
+public class SampleListener implements ApplicationListener<ApplicationStartingEvent> {
+    @Override
+    public void onApplicationEvent(ApplicationStartingEvent event) {
+        System.out.println("=========");
+        System.out.println("App ApplicationStartingEvent");
+        System.out.println("=========");
+    }
+}
+~~~
+
+SampleListener 이벤트 클래스를 만들어도 Spring Boot 실행시 아무 반응도 일어나지 않습니다.
+SampleListener 이벤트를 실행시키려면 이벤트 등록을 해줘야 합니다.
+
+~~~
+SpringApplication app = new SpringApplication(Application.class);
+app.addListeners(new SampleListener());
+app.run(args);
+~~~
+
+결과는 Spring Boot 실행시 맨 위에 문구가 출력 됩니다.
+
+Spring Boot 시작된 후 실행되는 이벤트 리스너
+
+~~~
+public class SampleListener implements ApplicationListener<ApplicationStartedEvent> {
+
+    @Override
+    public void onApplicationEvent(ApplicationStartedEvent event) {
+        System.out.println("=========");
+        System.out.println("App ApplicationStartedEvent");
+        System.out.println("=========");
+    }
+}
+~~~
+
+결과는 Spring Boot 실행된 후 맨 마지막에 문구가 출력 됩니다.
+
+## WebApplicationType 설정
+
+[Web Environment](#https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-web-environment)
+
+기본적으로 Spring MVC 구조 또는 SERVLET으로 되어있다면 Type은 SERVLET 으로 구동합니다.
+
+WebApplicationType.SERVLET
+
+Spring MVC 그리고 SERVLET 둘다 존재하지 않는다면 REACTIVE 으로 구동됩니다.
+
+WebApplicationType.REACTIVE
+
+## 애플리케이션 아규먼트 사용하기
+
+ApplicationArguments를 빈으로 등록해 주니까 사용하면 됩니다.
+
+~~~
+public class SampleListener {
+    public SampleListener(ApplicationArguments arguments) {
+        System.out.println("foo: " + arguments.containsOption("foo"));
+        System.out.println("bar: " + arguments.containsOption("bar"));
+    }
+}
+~~~
+
+클래스 정의 후 EditConfigurations 수정 클릭 후 
+VM options : -Dfoo
+Program arguments : --bar
+값 추가후 run 실행
+
+결과
+~~~
+foo: false
+bar: true
+~~~
+
+이것으로 알 수 있는것은 (--) 추가된것만 arguments 로 들어오는 것을 확인할 수 있습니다.
+
+## 애플리케이션 실행한 뒤 뭔가 실행하고 싶을 때
+
+Applicationrunner
+
+~~~
+@Component
+public class SampleListener implements ApplicationRunner {
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("foo: " + args.containsOption("foo"));
+        System.out.println("bar: " + args.containsOption("bar"));
+    }
+}
+~~~
+
+CommandLineRunner
+
+~~~
+@Component
+public class SampleListener implements CommandLineRunner {
+    @Override
+    public void run(String... args) throws Exception {
+        Arrays.stream(args).forEach(System.out::println);
+    }
+}
+~~~
+
+여러개의 Runner 가 존재할경우
+
+@Order 어노테이션으로 순서를 정할 수 있습니다.
