@@ -43,6 +43,14 @@
     - [2. WebApplicationType 설정](#WebApplicationType-설정)
     - [3. 애플리케이션 아규먼트 사용하기](#애플리케이션-아규먼트-사용하기)
     - [4. 애플리케이션 실행한 뒤 뭔가 실행하고 싶을 때](#애플리케이션-실행한-뒤-뭔가-실행하고-싶을-때)
+- [9. 외부 설정 1부](#외부-설정-1부)
+    - [1. 프로퍼티 우선 순위](#프로퍼티-우선-순위)
+    - [2. Environment](#Environment)
+    - [3. Test 에서의 우선 순위 확인](#Test-에서의-우선-순위-확인)
+        - [1. @SpringBootTest](#@SpringBootTest)
+        - [2. @TestPropertySource](#@TestPropertySource)
+    - [4. 중복의 프로퍼티 관리](#중복의-프로퍼티-관리)
+    - [5. application.properties 위치](#application.properties-위치)
 
 # Spring Boot 란 무엇인가
 
@@ -943,3 +951,273 @@ public class SampleListener implements CommandLineRunner {
 여러개의 Runner 가 존재할경우
 
 @Order 어노테이션으로 순서를 정할 수 있습니다.
+
+# 외부 설정 1부
+
+- properties
+- YAML
+- 환경 변수
+- 커맨드 라인 아규먼트
+
+외부 설정 파일이라는 것은 에플리케이션에서 사용하는 여러가지 설정값 들을 
+에플리케이션 외부 혹은 내부에 정의하는 기능입니다.
+
+> application.properties
+
+~~~
+jjunpro.name = jjunpro
+~~~
+
+스프링 부트가 에플리케이션을 구동할때 자동으로 로딩하는 컴벤션입니다.
+기본적으로 key & value 값을 넣어서 사용합니다.
+
+설정된 값을 가져오는 방법
+
+[Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config)
+
+1. @Value('')
+
+> SampleRunner.class
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+
+    @Value("${jjunpro.name}")
+    private String name;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("=============");
+        System.out.println(name);
+        System.out.println("=============");
+    }
+}
+~~~
+
+정상적으로 properties 값을 가져와 출력하는 것을 확인할 수 있습니다.
+
+## 프로퍼티 우선 순위
+
+1. 유저 홈 디렉토리에 있는 spring-boot-dev-tools.properties
+2. 테스트에 있는 @TestPropertySource
+3. @SpringBootTest 애노테이션의 properties 애트리뷰트
+4. 커맨드 라인 아규먼트
+5. SPRING_APPLICATION_JSON (환경 변수 또는 시스템 프로티) 에 들어있는 프로퍼티
+6. ServletConfig 파라미터
+7. ServletContext 파라미터
+8. java:comp/env JNDI 애트리뷰트
+9. System.getProperties() 자바 시스템 프로퍼티
+10. OS 환경 변수
+11. RandomValuePropertySource
+12. JAR 밖에 있는 특정 프로파일용 application properties
+13. JAR 안에 있는 특정 프로파일용 application properties
+14. JAR 밖에 있는 application properties
+15. JAR 안에 있는 application properties
+16. @PropertySource
+17. 기본 프로퍼티 (SpringApplication.setDefaultProperties)
+
+프로퍼티 우선 순위 예제를 하나 보자면
+
+java -jar ${JARfile} --jjunpro.name=update
+
+해당 순위는 4 순위 커맨드 라인 아규먼트에 해당되서 값을 오버라이딩 해서 update 출력됩니다. 
+
+## Environment
+
+모든 프로퍼티들은 기본적으로 `environment 통해서 접근`합니다.
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+    @Autowired
+    Environment environment;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("=============");
+        System.out.println(environment.getProperty("jjunpro.name"));
+        System.out.println("=============");
+    }
+}
+~~~
+
+## Test 에서의 우선 순위 확인
+
+~~~
+testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.2.3.RELEASE'
+~~~
+
+우선 테스트 코드를 작성하기 이전에 Spring Boot Test 의존성을 추가합니다.
+
+> ApplicationTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ApplicationTest {
+
+    @Autowired
+    Environment environment;
+
+    @Test
+    public void main() {
+        assertThat(environment.getProperty("jjunpro.name"))
+            .isEqualTo("jjunpro");
+    }
+}
+~~~
+
+Test 결과를 확인해 보면 15 순위 프로퍼티를 통해서 정상적으로 통과할 것입니다.
+ 
+테스트에서 사용할 수 있는 테스트 용도 프로퍼티스를 바꿔야 하는 경우 Test 모듈에 똑같은 프로퍼티 파일을 생성 후 값을 추가하면
+`기존의 프로퍼티는 무시되고 Test 프로퍼티가 오버리아딩 되어 Test 프로퍼티 값이 참조`됩니다.
+
+> /test/application.properties
+
+~~~
+jjunpro.name = jjunproTest
+~~~
+
+> ApplicationTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ApplicationTest {
+
+    @Autowired
+    Environment environment;
+
+    @Test
+    public void main() {
+        assertThat(environment.getProperty("jjunpro.name"))
+            .isEqualTo("jjunproTest");
+    }
+}
+~~~
+
+하지만 이렇게 두개의 프로퍼티를 사용하게 되면 큰 문제가 발생하게 됩니다.
+예를 들어서 기본 프로퍼티에 age 라는 값을 추가합니다.
+
+> application.properties
+
+~~~
+jjunpro.name = jjunpro
+jjunpro.age = ${random.int}
+~~~
+
+프로퍼티 랜덤값 생성 방법 문서
+
+[Configuring Random Values](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-random-values)
+
+일반적으로 application 을 실행하면
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+
+    @Value("${jjunpro.name}")
+    private String name;
+
+    @Value("${jjunpro.age}")
+    private String age;
+
+    @Autowired
+    Environment environment;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("=============");
+        System.out.println(name);
+        System.out.println(age);
+        System.out.println("=============");
+    }
+}
+~~~
+
+age 값을 정상적으로 가져옵니다.
+하지만 테스트 코드를 실행하면 오류가 발생합니다.
+
+~~~
+java.lang.IllegalArgumentException: Could not resolve placeholder 'jjunpro.age' in value "${jjunpro.age}"
+~~~
+
+처음 일반 프로퍼티의 age 값은 존재합니다 하지만 테스트를 빌드할때 테스트의 프로퍼티를 오버라이드 해서
+테스트 프로퍼티에는 age 값이 존재하지 않아 오류가 발생하는것 
+SampleRunner 에서는 age 값을 참조하려고 하지만 테스트 프로퍼티에는 age 값이 존재하지 않아 발생하는 오류 
+오류를 해결하려면 테스트 프로퍼티에도 age값을 추가해주면 해결됩니다. 
+
+### @SpringBootTest 
+
+ ~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest(properties = "jjunpro.name=jjunproUpdate")
+public class ApplicationTest {
+
+    @Autowired
+    Environment environment;
+
+    @Test
+    public void main() {
+        assertThat(environment.getProperty("jjunpro.name"))
+            .isEqualTo("jjunproUpdate");
+    }
+}
+ ~~~
+
+ @SpringBootTest 어노테이션의 프로퍼티 설정이 3순위 이기때문에 테스트가 jjunproUpdate 값으로
+ 통과되는것을 확인할 수 있습니다.
+
+ ### @TestPropertySource
+
+ ~~~
+ @TestPropertySource(properties = "jjunpro.name=jjunproUpdate")
+ ~~~
+
+ @SpringBootTest 값이 아닌 별도로 프로퍼티를 주고싶다면 2 순위 @TestPropertySource 으로 직접 주는방법
+
+## 중복의 프로퍼티 관리
+
+프로퍼티를 파일로 관리하면 중복의 프로퍼티를 사용 가능합니다.
+
+> test.properties
+
+~~~
+jjunpro.name = jjunproNew
+jjunpro.age = ${random.int}
+~~~
+
+> /test/ApplicationTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@TestPropertySource(locations = "classpath:/test.properties")
+@SpringBootTest
+public class ApplicationTest {
+
+    @Autowired
+    Environment environment;
+
+    @Test
+    public void main() {
+        assertThat(environment.getProperty("jjunpro.name"))
+            .isEqualTo("jjunproNew");
+    }
+}
+~~~
+
+정상적으로 application.properties 그리고 test.properties 둘다 불러옵니다.
+
+## application.properties 위치
+
+[Application Property Files](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-application-property-files)
+
+application.properties 우선 순위 (높은게 낮은걸 덮어 씁니다.)
+
+1. file:./config/
+2. file:./
+3. classpath:/config/
+4. classpath:/
+
+4곳에 존재할 수 있습니다. 
