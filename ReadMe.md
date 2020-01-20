@@ -53,6 +53,7 @@
     - [5. application.properties 위치](#application.properties-위치)
 - [10. 외부 설정 2부](#외부-설정-2부)
     - [1. 프로퍼티 Bean 등록 방법](#프로퍼티-Bean-등록-방법)
+    - [2. 프로퍼티 값 검증](#프로퍼티-값-검증)
 
 # Spring Boot 란 무엇인가
 
@@ -1234,7 +1235,7 @@ application.properties 우선 순위 (높은게 낮은걸 덮어 씁니다.)
 
 ~~~
 jjunpro.name = jjunpro
-jjunpro.age = ${random.int(0, 100)}
+jjunpro.age = ${random.int(0,100)}
 jjunpro.fullName = ${jjunpro.name} pow 
 ~~~
 
@@ -1269,3 +1270,32 @@ public class Application {
 
 하지만 Spring 에서는 자동으로 EnableConfigurationProperties 등록이 되어있으므로 
 JjunproProperties.class에 Bean 등록 @Component 어노테이션만 작성하면 등록이 됩니다.
+
+## 프로퍼티 값 검증
+
+[ConfigurationProperties Validation](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-validation)
+
+@Validated 어노베이션으로 값 검증을 실시합니다.
+
+~~~
+@Component
+@ConfigurationProperties("jjunpro")
+@Validated
+public class JjunproProperties {
+    @NotEmpty
+    private String name;
+
+    ...
+}
+~~~
+
+name 값이 비어있지 않아야 한다고 선언하고 프로퍼티 name 값을 빈값으로 실행하면
+
+~~~
+Property: jjunpro.name
+Value: 
+Origin: class path resource [application.properties]:2:0
+Reason: 반드시 값이 존재하고 길이 혹은 크기가 0보다 커야 합니다.
+~~~
+
+다음과 같은 경고문이 발생합니다. 검증 성공 
