@@ -51,6 +51,8 @@
         - [2. @TestPropertySource](#@TestPropertySource)
     - [4. 중복의 프로퍼티 관리](#중복의-프로퍼티-관리)
     - [5. application.properties 위치](#application.properties-위치)
+- [10. 외부 설정 2부](#외부-설정-2부)
+    - [1. 프로퍼티 Bean 등록 방법](#프로퍼티-Bean-등록-방법)
 
 # Spring Boot 란 무엇인가
 
@@ -1221,3 +1223,49 @@ application.properties 우선 순위 (높은게 낮은걸 덮어 씁니다.)
 4. classpath:/
 
 4곳에 존재할 수 있습니다. 
+
+# 외부 설정 2부
+
+## 프로퍼티 Bean 등록 방법
+
+같은키로 시작되는 외부설정을 Bean으로 등록하여 사용하는방법
+
+> application.properties
+
+~~~
+jjunpro.name = jjunpro
+jjunpro.age = ${random.int(0, 100)}
+jjunpro.fullName = ${jjunpro.name} pow 
+~~~
+
+> JjunproProperties.class
+
+~~~
+@ConfigurationProperties("jjunpro")
+public class JjunproProperties {
+    private String name;
+    private int age;
+    private String fullName;
+
+    // Getter, Setter
+~~~
+
+@ConfigurationProperties 값을 바인딩 해줄수 있도록 설정해주는 어노테이션
+바인딩한 값을 Bean으로 등록해주도록 도와주는 어노테이션 @EnableConfigurationProperties
+
+> Application.class
+
+~~~
+@SpringBootApplication
+@EnableConfigurationProperties(JjunproProperties.class)
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(Application.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+        app.run(args);
+    }
+}
+~~~
+
+하지만 Spring 에서는 자동으로 EnableConfigurationProperties 등록이 되어있으므로 
+JjunproProperties.class에 Bean 등록 @Component 어노테이션만 작성하면 등록이 됩니다.

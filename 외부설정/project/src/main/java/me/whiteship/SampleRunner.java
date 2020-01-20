@@ -10,20 +10,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class SampleRunner implements ApplicationRunner {
 
-    @Value("${jjunpro.name}")
-    private String name;
-
-    @Value("${jjunpro.age}")
-    private String age;
+//    @Value("${jjunpro.name}")
+//    private String name;
+//
+//    @Value("${jjunpro.age}")
+//    private String age;
+//
+//    @Autowired
+//    Environment environment;
 
     @Autowired
-    Environment environment;
+    JjunproProperties jjunproProperties;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         System.out.println("=============");
-        System.out.println(name);
-        System.out.println(age);
+        System.out.println(jjunproProperties.getName());
+        System.out.println(jjunproProperties.getAge());
+        System.out.println(jjunproProperties.getFullName());
         System.out.println("=============");
     }
 }
