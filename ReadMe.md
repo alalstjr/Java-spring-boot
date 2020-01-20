@@ -54,6 +54,9 @@
 - [10. 외부 설정 2부](#외부-설정-2부)
     - [1. 프로퍼티 Bean 등록 방법](#프로퍼티-Bean-등록-방법)
     - [2. 프로퍼티 값 검증](#프로퍼티-값-검증)
+- [11. 프로파일](#프로파일)
+    - [1. 프로파일용 프로퍼티](#프로파일용-프로퍼티)
+    - [2. 프로파일 추가하기](#프로파일-추가하기)
 
 # Spring Boot 란 무엇인가
 
@@ -1299,3 +1302,149 @@ Reason: 반드시 값이 존재하고 길이 혹은 크기가 0보다 커야 합
 ~~~
 
 다음과 같은 경고문이 발생합니다. 검증 성공 
+
+# 프로파일
+
+@Profile 애노테이션은 어디에?
+어떤 특정한 프로파일에서만 특정한 빈을 등록하고 싶을때 사용하는 어노테이션
+
+간단한 예제
+
+> /config/BaseConfiguration.class
+
+~~~
+@Profile("prod")
+@Configuration
+public class BaseConfiguration {
+    @Bean
+    public String hello() {
+        return "hello";
+    }
+}
+~~~
+
+@Configuration 빈을 등록하여 설정 후 Bean 을 사용할 수 있습니다.
+
+hello Bean 을 등록합니다.
+TestConfiguration.class 에도 hello를 Bean 으로 등록합니다. 
+
+@Profile("prod") 설정하므로서
+해당 Bean 설정 파일 자체가 prod 라는 설정파일 일때만 사용이 됩니다.
+
+> /config/TestConfiguration.class
+
+~~~
+@Profile("test")
+@Configuration
+public class TestConfiguration {
+    @Bean
+    public String hello() {
+        return "helloTest";
+    }
+}
+~~~
+
+> SampleRunner.class
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+
+    // 프로파일 설정 Bean
+    @Autowired
+    private String hello;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("=============");
+        System.out.println(hello);
+        System.out.println("=============");
+    }
+}
+~~~
+
+hello Bean 을 찾을 수 가 없어서 에러가 발생합니다.
+
+~~~
+Field hello in me.whiteship.SampleRunner required a bean of type 'java.lang.String' that could not be found.
+~~~
+
+프로파일을 활성화 해주기 위해서 
+활설화 하는 프로파일에 설정을 할  수 있습니다.
+
+> application.propertices
+
+~~~
+spring.profiles.active = prod
+~~~
+
+실행하면 hello Bean 을 정상적으로 가져오는것을 확인할 수 있습니다. 
+
+이번엔 prod 를 test 로 변경하여 실행한다면?
+
+~~~
+spring.profiles.active = test
+~~~
+
+test 로 설정된 Bean 을 가져와 실행합니다.
+
+## 프로파일용 프로퍼티
+
+application-{profile}.properties
+
+> application-prod.properties
+
+~~~
+jjunpro.name = "jjunpro prod"
+~~~
+
+> application-test.properties
+
+~~~
+jjunpro.name = "jjunpro test"
+~~~
+
+> SampleRunner.class
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+
+    @Autowired
+    JjunproProperties jjunproProperties;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        System.out.println("=============");
+        System.out.println(jjunproProperties.getName());
+        System.out.println("=============");
+    }
+}
+~~~
+
+실행해 보면 결과
+
+~~~
+=============
+"jjunpro prod"
+=============
+~~~
+
+이런 프로파일 관련된 프로퍼티가 기본 application.propertices 보다 우선순위가 높습니다.
+ 
+## 프로파일 추가하기
+
+spring.profiles.include
+
+여러개의 프로퍼티 파일을 불러오는 설정입니다.
+
+application-update.properties 파일이 존재한다면 해당 프로퍼티를 불러와 사용하는것
+
+~~~
+spring.profiles.include = update
+~~~
+
+java --jar 패키징으로 실행하는 방법으로는 web, docker 등등 배포할때 사용하며
+
+Program arguments : --sp ring.profiles.active=prod 설정하는식으로는 개발용으로 사용합니다.
+설정하여 실행하면 pord 프로퍼티를 실행하게 됩니다.
