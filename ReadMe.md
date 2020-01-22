@@ -51,12 +51,16 @@
         - [2. @TestPropertySource](#@TestPropertySource)
     - [4. 중복의 프로퍼티 관리](#중복의-프로퍼티-관리)
     - [5. application.properties 위치](#application.properties-위치)
+    - [6. @Value("")](#@Value(""))
 - [10. 외부 설정 2부](#외부-설정-2부)
     - [1. 프로퍼티 Bean 등록 방법](#프로퍼티-Bean-등록-방법)
     - [2. 프로퍼티 값 검증](#프로퍼티-값-검증)
 - [11. 프로파일](#프로파일)
     - [1. 프로파일용 프로퍼티](#프로파일용-프로퍼티)
     - [2. 프로파일 추가하기](#프로파일-추가하기)
+- [12. 로깅](#로깅)
+    - [1. 로그 레벨 조정](#로그-레벨-조정)
+    - [2. 커스텀 로그 설정파일 사용하기](#커스텀-로그-설정파일-사용하기)
 
 # Spring Boot 란 무엇인가
 
@@ -981,7 +985,7 @@ jjunpro.name = jjunpro
 
 [Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config)
 
-1. @Value('')
+## @Value("")
 
 > SampleRunner.class
 
@@ -1271,8 +1275,8 @@ public class Application {
 }
 ~~~
 
-하지만 Spring 에서는 자동으로 EnableConfigurationProperties 등록이 되어있으므로 
-JjunproProperties.class에 Bean 등록 @Component 어노테이션만 작성하면 등록이 됩니다.
+`하지만 Spring 에서는 자동으로 EnableConfigurationProperties 등록`이 되어있으므로 
+JjunproProperties.class에 Bean 등록 `@Component 어노테이션만 작성하면 등록`이 됩니다.
 
 ## 프로퍼티 값 검증
 
@@ -1448,3 +1452,111 @@ java --jar 패키징으로 실행하는 방법으로는 web, docker 등등 배�
 
 Program arguments : --sp ring.profiles.active=prod 설정하는식으로는 개발용으로 사용합니다.
 설정하여 실행하면 pord 프로퍼티를 실행하게 됩니다.
+
+# 로깅
+
+[Logging](https://docs.spring.io/spring/docs/5.0.0.RC3/spring-framework-reference/overview.html#overview-logging)
+
+[Logging-Spring-Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-logging)
+
+- 로깅 퍼사드 VS 로거
+- Commons Logging, SLF4j
+- JUL, Log4J2, Logback
+
+출력된 로그의 역할
+
+~~~
+2020-01-22 17:18:35.730          -> 날짜
+INFO                             -> 로그 레벨
+912                              -> PID
+--- [           main]            -> 쓰레드 이름
+com.backend.project.Application: -> 패키지 경로 & 풀패키지 경로 & 클래스 이름
+Starting App ...                 -> 상태 정보
+~~~
+
+- 스프링 부트 로깅
+    - 기본 포맷
+    - -debug (일부 핵심 라이브러리만 디버깅 모드로)
+    - --trace (전부 다 디버깅 모드로)
+    - 컬러 출력: spring.output.ansi.enabled =ㅇ always
+    - 파일 출력: logging.file 또는 logging.path
+        - logging.file 로그의 파일을 설정
+        - logging.path 로그의 경로를 설정
+    - 로그 레벨 조정: logging.level.패지키 = 로그 레벨
+
+## 로그 레벨 조정
+
+Spring Poroject 모든 Debug 정보를 출력
+
+~~~
+logging.level.org.springframework = debug
+~~~
+
+나의 프로젝트 Debug 정보를 출력하는 코드
+
+> SampleRunner.class
+
+~~~
+@Component
+public class SampleRunner implements ApplicationRunner {
+
+    private Logger logger = LoggerFactory.getLogger(SampleRunner.class);
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        logger.debug("=============");
+        logger.debug("My Project Log");
+        logger.debug("=============");
+    }
+}
+~~~
+
+~~~
+logging.level.me.whiteship = debug
+~~~
+
+출력 결과
+
+~~~
+2020-01-23 00:54:32.659 DEBUG 1257 --- [           main] me.whiteship.SampleRunner                : =============
+2020-01-23 00:54:32.659 DEBUG 1257 --- [           main] me.whiteship.SampleRunner                : My Project Log
+2020-01-23 00:54:32.659 DEBUG 1257 --- [           main] me.whiteship.SampleRunner                : =============
+~~~
+
+## 커스텀 로그 설정파일 사용하기
+
+[Logback Extensions](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-logback-extensions)
+[Configure Logback for Logging](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-data-access)
+
+이런 설정들을 더 많이 컨트롤 하고싶다면 `로그 설정파일을 추가`하면 됩니다.
+`logback-spring.xml` 파일을 추가합니다.
+Spring Boot에서 추가 기능을 제공해 줍니다.
+
+- Logback: logback-spring.xml
+- Log4J2: log4j2-spring.xml
+- JUL (비추): logging.properties
+
+> logback-spring.xml
+
+~~~
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+    <logger name="me.whiteship" level="DEBUG"/>
+</configuration>
+~~~
+
+결과는 위 프로퍼티로 설정한 로그 레벨하고 같은 결과가 나옵니다.
+다만 다른부분은 로그 컨트롤하는 부분이 더 넓어졌습니다.
+
+- Logback extension
+    - 프로파일 <springProfile name=”프로파일”>
+    - Environment 프로퍼티 <springProperty>
+
+[Profile-specific Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#profile-specific-configuration)
+
+특정한 프로파일인 경우에만 실행하는 로그
