@@ -61,6 +61,18 @@
 - [12. 로깅](#로깅)
     - [1. 로그 레벨 조정](#로그-레벨-조정)
     - [2. 커스텀 로그 설정파일 사용하기](#커스텀-로그-설정파일-사용하기)
+- [13. 테스트](#테스트)
+    - [1. MOCK MVC 클라이언트 사용방법](#MOCK-MVC-클라이언트-사용방법)
+    - [2. RANDOM_PORT](#RANDOM_PORT)
+        - [1. TestRestTemplate](#TestRestTemplate)
+        - [2. WebTestClient](#WebTestClient)
+    - [3. 슬라이스 테스트](#슬라이스-테스트)
+    - [4. 테스트 유틸](#테스트-유틸)
+- [14. Spring Boot DevTools](#Spring-Boot-DevTools)
+- [15. 스프링 웹 MVC](#스프링-웹-MVC)
+    - [1. 스프링 MVC 확장](#스프링-MVC-확장)
+    - [2. 스프링 MVC 재정의](#스프링-MVC-재정의)
+- [16. mvc-config-message-converters](#mvc-config-message-converters)
 
 # Spring Boot 란 무엇인가
 
@@ -1786,7 +1798,7 @@ public class SampleControllerTest {
 }
 ~~~
 
-### 슬라이스 테스트
+## 슬라이스 테스트
 
 - 레이어 별로 잘라서 테스트하고 싶을 때
     - @JsonTest
@@ -1825,3 +1837,259 @@ public class SampleControllerTest {
 
 만 Bean으로 등록이 되며 웹 계층 밑의 Bean들은 의존성이 제외가 됩니다.
 만약에 사용하는 의존성이 있다면 Mock(모조품)을 등록해서 사용해야 합니다.
+
+## 테스트 유틸
+
+OutputCaptureRule 활용하여 특정 로그 메시지가 출력이 되는지 테스트 코드로 확인하고 싶을 때 유용하게 쓸 수 있습니다.
+
+~~~
+@RunWith(SpringRunner.class)
+@WebMvcTest(SampleController.class)
+public class SampleControllerTest {
+
+    @MockBean
+    SampleService mockSampleService;
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @Rule
+    public OutputCaptureRule outputCaptureRule = new OutputCaptureRule();
+
+    @Test
+    public void hello() throws Exception {
+        when(mockSampleService.getName()).thenReturn("MockJJunpro");
+
+        mockMvc.perform(get("/hello"))
+                .andExpect(content().string("helloMockJJunpro"));
+
+        assertThat(outputCaptureRule.toString()).contains("holoman")
+                .contains("skip");
+    }
+}
+~~~
+
+# Spring Boot DevTools
+
+Spring Boot가 제공하는 옵셔널한 툴
+
+* 신뢰도가 많이 떨어지는 의존성이라 사용을 권하지는 않음 그냥 존재가 있다는것만 인식
+
+사용하기 이전에 의존성을 추가해야 합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.2.2.RELEASE'
+~~~
+
+[Property Defaults](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
+
+위 문서의 git 주소로 들어가면
+
+~~~
+properties.put("spring.thymeleaf.cache", "false");
+properties.put("spring.freemarker.cache", "false");
+properties.put("spring.groovy.template.cache", "false");
+properties.put("spring.mustache.cache", "false");
+properties.put("server.servlet.session.persistent", "true");
+properties.put("spring.h2.console.enabled", "true");
+properties.put("spring.resources.cache.period", "0");
+properties.put("spring.resources.chain.cache", "false");
+properties.put("spring.template.provider.cache", "false");
+properties.put("spring.mvc.log-resolved-exception", "true");
+properties.put("server.error.include-stacktrace", "ALWAYS");
+properties.put("server.servlet.jsp.init-parameters.development", "true");
+properties.put("spring.reactor.debug", "true");
+~~~
+
+위 설정들이 바뀌게 됩니다.
+캐시 설정을 개발 환경에 맞게 변경.
+
+- 클래스패스에 있는 파일이 변경 될 때마다 자동으로 재시작.
+- 직접 껐다 켜는거 (cold starts)보다 빠른다. 왜?
+(Automatic Restart)[https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#using-boot-devtools-restart]
+클래스 `로더를 두개 사용`합니다.
+하나는 `베이스 클래스 로더` 라이브 러리들 개발자가 바꾸지 않는 의존성을 불러들이는 클래스들
+개발자의 에플리케이션을 읽어 들이는 `restart classloader`
+
+- 릴로딩 보다는 느리다. (JRebel 같은건 아님)
+- 리스타트 하고 싶지 않은 리소스는? spring.devtools.restart.exclude
+- 리스타트 기능 끄려면? spring.devtools.restart.enabled = false
+
+# 스프링 웹 MVC
+
+[스프링 웹 MVC](https://docs.spring.io/spring/docs/5.0.7.RELEASE/spring-framework-reference/web.html#spring-web)
+
+스프링 웹 MVC 기능을 아무런 설정파일을 작성하지 않아도 개발을 바로 시작할 수 있습니다. 
+스프링 부트에서 제공해주는 기본 설정 때문에 가능한 일입니다.
+
+> /External Libraries/spring-boot-autoconfigure/META-INF/spring.factories
+
+내부에서 자동설정을 해주기 때문입니다.
+
+## 스프링 MVC 확장
+
+@Configuration + WebMvcConfigurer
+
+추가적인 설정을 하고 싶다면
+
+> WebConfig.class
+
+~~~
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+}
+~~~
+
+## 스프링 MVC 재정의
+
+@Configuration + @EnableWebMvc
+
+@EnableWebMvc 어노테이션이 붙는 순간 기본 스프링부트의 설정은 사라지고 개발자 본인이 다시 설정을 해줘야 합니다. 
+
+# mvc-config-message-converters
+
+HTTP 요청 본문으로 들어오는 것을 객체로 변환하거나 객체를 HTTP 응답 본문으로 변경할때 사용
+
+어떤 데이터가 요청의 본문에 데이터가 들어있는 상태로 들어오는 데이터를 객체로 받고싶을때 사용
+@RequestBody User user
+
+~~~
+@RestController
+public class UserController {
+    @PostMapping("/user")
+    @ResponseBody
+    public User create(
+            @RequestBody User user
+    ) {
+        return null;
+    }
+}
+~~~
+
+JSON 요청이고 JSON 본문이 들어왔다면 JSON 메세지 컨버터가 사용이 되서 
+JSON 메세지를 USER 라는 객체로 컨버팅을 해줍니다.
+
+USER 타입의 객체를 리턴할때 HTTP 자체는 문자이기 때문에 USER 객체 자체를 리턴할 수는 없습니다.
+그래서 USER를 변환을 해야합니다. 
+기본적으로는 JSON 메세지 컨버터를 사용해서 변환합니다.
+
+만약 String, int 타입일 경우에는 String 메세지 컨버터가 사용됩니다.
+
+또 한가지 
+
+@RestController 어노테이션이 붙어 있다면 @ResponseBody 을 생략을 해도 됩니다.
+
+~~~
+...
+    @PostMapping("/user")
+    public User create(
+            @RequestBody User user
+    ) {
+        return null;
+    }
+...
+~~~
+
+간단 예제
+
+> User.class
+
+~~~
+public class User {
+    private String username;
+    private String password;
+
+    Getter && Setter
+}
+~~~
+
+> UserController.class
+
+~~~
+@RestController
+public class UserController {
+    @PostMapping("/users/create")
+    public User create(
+            @RequestBody
+                    User user
+    ) {
+        return user;
+    }
+}
+~~~
+
+> UserControllerTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@WebMvcTest(UserController.class)
+public class UserControllerTest {
+    @Autowired
+    MockMvc mockMvc;
+
+    @Test
+    public void createUser_JSON() throws Exception {
+        String userJson = "{\"username\":\"jjunpro\", \"password\":\"1234\"}";
+
+        mockMvc.perform(post("/users/create")
+                .contentType(MediaType.APPLICATION_JSON)    // contentType는 JSON 타입
+                .accept(MediaType.APPLICATION_JSON)         // 응답은 JSON 타입
+                .content(userJson))                         // 응답 본문으로는 Json 내용을 넣습니다.
+                .andExpect(status().isOk())                 // 응답 결과를 확인 후
+                .andExpect(jsonPath(                        // 응답 결과에 JSON이 맞는지 체크합니다.
+                        "$.username",
+                        is(equalTo("jjunpro"))
+                ))
+                .andExpect(jsonPath(
+                        "$.password",
+                        is(equalTo("1234"))
+                ))
+                .andDo(print());
+    }
+}
+~~~
+
+결과
+
+~~~
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /users/create
+       Parameters = {}
+          Headers = [Content-Type:"application/json", Accept:"application/json", Content-Length:"41"]
+             Body = <no character encoding set>
+    Session Attrs = {}
+
+Handler:
+             Type = me.whiteship.memospringmvc.user.UserController
+           Method = me.whiteship.memospringmvc.user.UserController#create(User)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Type:"application/json"]
+     Content type = application/json
+             Body = {"username":"jjunpro","password":"1234"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+~~~
+
+# ViewreSolver
+
+[Spring MVC Auto-configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-auto-configuration)
