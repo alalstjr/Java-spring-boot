@@ -75,6 +75,9 @@
 - [16. mvc-config-message-converters](#mvc-config-message-converters)
 - [17. ViewreSolver](#ViewreSolver)
     - [1. XML 컨버터](#XML-컨버터)
+- [18. 정적 리소스 지원](#정적-리소스-지원)
+    - [1. root 경로 설정하기](#root-경로-설정하기)
+    - [2. 리소스 핸들러 커스텀마이징](#리소스-핸들러-커스텀마이징)
 
 # Spring Boot 란 무엇인가
 
@@ -2190,3 +2193,96 @@ MockHttpServletResponse:
           Cookies = []
 BUILD SUCCESSFUL in 7s
 ~~~
+
+# 정적 리소스 지원
+
+클라이언트에서 요청이 들어왔을 때 그거에 해당하는 리소스가 이미 만들어 져 있는경우 
+해당 리소스를 그대로 보내주는 경우
+
+- 기본 리소스 위치
+    - classpath:/static
+    - classpath:/public
+    - classpath:/resources/
+    - classpath:/META-INF/resources
+    - 예) “/hello.html” => /static/hello.html
+    - spring.mvc.static-path-pattern: 맵핑 설정 변경 가능
+    - spring.mvc.static-locations: 리소스 찾을 위치 변경 가능
+
+> /resources/static/hello.html
+
+~~~
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    Hello HTML~!
+</body>
+</html>
+~~~
+
+서버 실행 후 크롬 개발자/Network/hello.html 상태를 확인합니다.
+
+~~~
+Status Code: 200 
+
+Response Headers
+Last-Modified: Fri, 24 Jan 2020 16:56:08 GMT
+
+Request Headers
+If-Modified-Since: Fri, 24 Jan 2020 16:56:08 GMT
+~~~
+
+If-Modified-Since: 해당 날짜 이후에 바꼇다면 새로 요청을 합니다.
+Last-Modified: If-Modified-Since 이후에 새로운 변경 요청이 들어왔으므로 새로운 값을 가져옵니다.
+
+다시 새로고침을 합니다.
+
+~~~
+Status Code: 304 
+
+Response Headers
+Last-Modified: Fri, 24 Jan 2020 16:56:08 GMT
+
+Request Headers
+If-Modified-Since: Fri, 24 Jan 2020 16:56:08 GMT
+~~~
+
+서버에서는 Last-Modified 데이터가 변화된것이 없으므로 304가 표시됩니다.
+해당 리소스를 다시 보내는것이 아니므로 응답이 더욱 빨라집니다. 
+
+## root 경로 설정하기
+
+- 정적 리소스 맵핑 “/**”
+
+> application.properties
+
+~~~
+spring.mvc.static-path-pattern = /static/**
+~~~
+
+## 리소스 핸들러 커스텀마이징
+
+> WebConfig.class
+
+addRersourceHandlers 메소드를 활용하여 추가합니다.
+기존에 제공하는 리소스 핸들러는 대로 유지하면서 개발자가 원하는 리소스 핸들러만 따로 추가할 수 있습니다.
+
+~~~
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/mobile/**") 
+                // mobile 이라는 요청이 들어 온다면
+                .addResourceLocations("classpath:/mobile/")     
+                // classpath:map 디렉토리 밑에서 제공을 하겠다.
+                .setCachePeriod(20);                            
+                // 만드시 classpath는 / 으로 끝나야 합니다.
+    }
+}
+~~~
+
+/mobile/hello.html 파일을 만든 후 서버 실행하여 접근하면 정상 로딩이 됩니다.
