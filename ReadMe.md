@@ -73,6 +73,8 @@
     - [1. 스프링 MVC 확장](#스프링-MVC-확장)
     - [2. 스프링 MVC 재정의](#스프링-MVC-재정의)
 - [16. mvc-config-message-converters](#mvc-config-message-converters)
+- [17. ViewreSolver](#ViewreSolver)
+    - [1. XML 컨버터](#XML-컨버터)
 
 # Spring Boot 란 무엇인가
 
@@ -2093,3 +2095,98 @@ MockHttpServletResponse:
 # ViewreSolver
 
 [Spring MVC Auto-configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-spring-mvc-auto-configuration)
+
+들어오는 요청에 Accept Head 에 따라서 응답이 달라집니다.
+Accept Head 라는것은 클라이언트가 어떠한 타입의 응답을 원한다 라고 서버에 알리는 것
+Accept Head 에따라서 응답이 달라질 수 도 있습니다.
+사용자가 어떠한 Veiw 정보를 원하는지 판단하는 정보는 Accept Head 입니다.
+
+물론 Accept Head를 제공하지 않는 요청도 존재합니다.
+Accept Head가 존재하지 않는경우에는 format 파라미터로 받을 수 있습니다.
+{?format=pdf}
+
+## XML 컨버터
+
+요청은 JSON으로 보내고 응답은 XML로 받아보는 예제
+
+~~~
+...
+@Test
+public void createUser_XML() throws Exception {
+    String userJson = "{\"username\":\"jjunpro\", \"password\":\"1234\"}";
+
+    mockMvc
+            .perform(post("/users/create")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_XML)
+                    .content(userJson))
+            .andExpect(status().isOk())
+            .andExpect(xpath("/User/username").string("jjunpro"))
+            .andExpect(xpath("/User/password").string("1234"))
+            .andDo(print());
+}
+...
+~~~
+
+406 에러가 발생합니다.
+
+~~~
+Resolved Exception: Type = org.springframework.web.HttpMediaTypeNotAcceptableException
+~~~
+
+미디어 타입을 처리하는 HTTP메세지 컨버터가 존재하지 않을경우 발생하는 오류입니다.
+
+> HttpMessageConvertersAutoConfiguration.class
+
+HTTP 컨버터를 자동 설정해주는 클레스입니다.
+
+import 중에서 {JacksonHttpMessageConvertersConfiguration.class} 내부를 들어가보면
+{MappingJackson2XmlHttpMessageConverterConfiguration.class} 를 불러오는 조건을 확인합니다.
+@ConditionalOnClass(XmlMapper.class) 는 XmlMapper.class 존재할 경우에만 불러온다고 조건이 있습니다.
+그러므로 XML 컨버터를 사용하려면 XmlMapper.class 의존성을 추가해야 합니다.
+
+~~~
+compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.10.1'
+~~~
+
+다시 테스트를 실행하면 정상적으로 통과가 됩니다.
+
+~~~
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /users/create
+       Parameters = {}
+          Headers = [Content-Type:"application/json", Accept:"application/xml", Content-Length:"41"]
+             Body = <no character encoding set>
+    Session Attrs = {}
+
+Handler:
+             Type = me.whiteship.memospringmvc.user.UserController
+           Method = me.whiteship.memospringmvc.user.UserController#create(User)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Type:"application/xml;charset=UTF-8"]
+     Content type = application/xml;charset=UTF-8
+             Body = <User><username>jjunpro</username><password>1234</password></User>
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+BUILD SUCCESSFUL in 7s
+~~~
