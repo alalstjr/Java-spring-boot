@@ -1560,3 +1560,268 @@ Spring Boot에서 추가 기능을 제공해 줍니다.
 [Profile-specific Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#profile-specific-configuration)
 
 특정한 프로파일인 경우에만 실행하는 로그
+
+# 테스트
+
+테스트 코드를 작성하기 이전에 의존성을 하나 추가합니다.
+
+~~~
+testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.2.3.RELEASE'
+~~~
+
+> /sample/SampleController.class
+
+~~~
+@RestController
+public class SampleController {
+
+    @Autowired
+    private SampleService sampleService;
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello" + sampleService.getName();
+    }
+}
+~~~
+
+>/sample/SampleService.class
+
+~~~
+@Service
+public class SampleService {
+
+    public String getName() {
+        return "jjunpro";
+    }
+}
+~~~
+
+SampleController.class 의 테스트 코드를 만들어 줍니다.
+
+~~~
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+~~~
+
+@SpringBootTest 어노테이션의 기본값은 MOCK(모조품) 으로 잡혀있습니다.
+서블릿 컨테이너를 테스트용으로 뛰우지 않고 모조품을 만들어서 뛰웁니다. 
+그래서 서블릿의 모조품이 나옵니다. 
+해당 모조품 서블릿에 테스트를 하려면 MOCK MVC 클라이언트를 사용해야 합니다.
+
+## MOCK MVC 클라이언트 사용방법
+
+테스트 클래스에 @AutoConfigureMockMvc 어노테이션을 추가한 후 MockMvc Bean으로 가져옵니다.
+
+~~~
+@Autowired
+MockMvc mockMvc;
+~~~
+
+> SampleControllerTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+public class SampleControllerTest {
+    @Autowired
+    MockMvc mockMvc;
+
+    @Test
+    public void hello() throws Exception {
+                // url 접속
+        mockMvc.perform(get("/hello"))                  
+                // url 접속 상태가 200 인지 체크
+                .andExpect(status().isOk())             
+                // url content 정보가 작성한 정보와 맞는지 확인
+                .andExpect(content().string("hellojjunpro"))
+                // 결과를 출력하는 메소드
+                .andDo(print());
+    }
+}
+~~~
+
+출력 결과
+
+~~~
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /hello
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = me.whiteship.sample.SampleController
+           Method = me.whiteship.sample.SampleController#hello()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Type:"text/plain;charset=UTF-8", Content-Length:"12"]
+     Content type = text/plain;charset=UTF-8
+             Body = hellojjunpro
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+2020-01-23 02:40:31.086  INFO 2586 --- [extShutdownHook] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'applicationTaskExecutor'
+BUILD SUCCESSFUL in 2s
+4 actionable tasks: 3 executed, 1 up-to-date
+2:40:31 오전: Tasks execution finished ':cleanTest :test --tests "me.whiteship.sample.SampleControllerTest"'.
+~~~
+
+## RANDOM_PORT
+
+RANDOM_PORT 사용시 실제로 서블릿 내장톰캣이 작동합니다.
+MOCK MVC를 사용하는것이 아니라 
+테스트용 REST 템플릿이나 테스트용 웹 클라이언트를 사용해야 합니다.
+
+### TestRestTemplate
+
+~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+public class SampleControllerTest {
+    @Autowired
+    TestRestTemplate testRestTemplate;
+
+    @Test
+    public void hello() throws Exception {
+        String result = testRestTemplate.getForObject(
+                "/hello",
+                String.class
+        );
+        // url 작성 후 원하는 Body 타입을 적어주면 결과값이 나옵니다.
+
+        assertThat(result).isEqualTo("hellojjunpro");
+    }
+}
+~~~
+
+실제로 랜덤 포트로 서버가 실행되어 내장 서버로 요청을 보내고 응답을 받은것입니다. 
+
+여기서 문제는 `테스트의 범위가 크다`는 것입니다.
+Test는 Service까지 테스트가 접근하는데 개발자는 `Service는 제외하고 Controller만 테스트하고싶다면?`
+MockBean을 활용하여 이 연관관계에 있는 SampleService 에 관한것을 mockSampleService 라고 만들면 
+application context 안에 들어있는 SampleSampleService Bean을 해당 테스트 코드에서 만든 MOCK Bean으로 교체합니다. 그래서 MockSampleService를 사용하게 됩니다.
+
+결론 `SampleController가 사용하는 SampleService의 모조품을 만들어서 Mock Bean으로 교체`한것입니다.
+
+~~~
+    ...
+
+    @MockBean
+    SampleService mockSampleService;
+
+    @Test
+    public void hello() throws Exception {
+        when(mockSampleService.getName()).thenReturn("MockJJunpro");
+
+        String result = testRestTemplate.getForObject(
+                "/hello",
+                String.class
+        );
+        // url 작성 후 원하는 Body 타입을 적어주면 결과값이 나옵니다.
+
+        assertThat(result).isEqualTo("helloMockJJunpro");
+    }
+}
+~~~
+
+### WebTestClient
+
+Java 5 새로 추가된 웹 플럭스 REST 클라이언트 중 하나
+기존에 사용하는 웹 클라이언트는 `동기(synchronous)` 요청 하나보내고 끝날때까지 기다린 후 다음 요청을 보내는 방식
+WebTestClient 는 `비동기(asynchronous)` 이벤트가 요청이오면 콜백을 바로 보낼 수 있습니다.
+
+사용하기 이전에 의존성을 추가합니다.
+spring-boot-starter-webflux
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.2.3.RELEASE'
+~~~
+
+> SampleControllerTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+public class SampleControllerTest {
+    @Autowired
+    WebTestClient webTestClient;
+
+    @MockBean
+    SampleService mockSampleService;
+
+    @Test
+    public void hello() throws Exception {
+        when(mockSampleService.getName()).thenReturn("MockJJunpro");
+
+        webTestClient.get()
+                .uri("/hello")                  // Req 요청을 만들어서
+                .exchange()                     // 보냅니다.
+                .expectStatus()                 // 연결상태를 체크합니다
+                .isOk()                         // 연결상태가 200일경우
+                .expectBody(String.class)       // Body Type
+                .isEqualTo("helloMockJJunpro");
+    }
+}
+~~~
+
+### 슬라이스 테스트
+
+- 레이어 별로 잘라서 테스트하고 싶을 때
+    - @JsonTest
+        - 우리가 가지고 있는 모댈이 JSON으로 나갈때 어떤 형태로 나가는지 테스트 할 수 있는 어노테이션
+
+딱 컨트롤러 하나만 테스트하는 경우
+
+[Auto-configured Spring MVC Tests](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-testing-spring-boot-applications-testing-autoconfigured-mvc-tests)
+
+~~~
+@RunWith(SpringRunner.class)
+@WebMvcTest(SampleController.class)
+public class SampleControllerTest {
+
+    @MockBean
+    SampleService mockSampleService;
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @Test
+    public void hello() throws Exception {
+        when(mockSampleService.getName()).thenReturn("MockJJunpro");
+
+        mockMvc.perform(get("/hello"))
+                .andExpect(content().string("helloMockJJunpro"));
+    }
+}
+~~~
+
+@WebMvcTest(SampleController.class) 등록으로 Service 는 따로 등록이 안됩니다.
+
+~~~
+@Controller, @ControllerAdvice, @JsonComponent, Converter, GenericConverter, Filter, HandlerInterceptor, WebMvcConfigurer, and HandlerMethodArgumentResolver. Regular @Component
+~~~
+
+만 Bean으로 등록이 되며 웹 계층 밑의 Bean들은 의존성이 제외가 됩니다.
+만약에 사용하는 의존성이 있다면 Mock(모조품)을 등록해서 사용해야 합니다.
