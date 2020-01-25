@@ -78,6 +78,8 @@
 - [18. 정적 리소스 지원](#정적-리소스-지원)
     - [1. root 경로 설정하기](#root-경로-설정하기)
     - [2. 리소스 핸들러 커스텀마이징](#리소스-핸들러-커스텀마이징)
+- [19. thymeleaf](#thymeleaf)
+    - [1. View 정보 가져와 보여주기](#View-정보-가져와-보여주기)
 
 # Spring Boot 란 무엇인가
 
@@ -2286,3 +2288,224 @@ public class WebConfig implements WebMvcConfigurer {
 ~~~
 
 /mobile/hello.html 파일을 만든 후 서버 실행하여 접근하면 정상 로딩이 됩니다.
+
+# 웹 JAR
+
+웹 JAR 란?
+흔히 볼수있는 ReactJS, 제이쿼리, 자바스크립트 등등을 JAR로 만들 수 있습니다.
+
+예제
+제이쿼리 의존성을 추가한 후
+
+~~~
+compile group: 'org.webjars.bower', name: 'jquery', version: '3.4.1'
+~~~
+
+> hello.html
+
+~~~
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    Hello HTML~!
+    <script src="/webjars/jquery/3.4.1/dist/jquery.min.js"></script>
+    <script>
+        $(function(){
+            alert("start");
+        });
+    </script>
+</body>
+</html>
+~~~
+
+해당 webjars 위치 탐색 후 경로를 작성하면 실행 됩니다.
+
+버전 생략하고 사용하려면 webjars-locator-core 의존성 추가
+
+# index 페이지와 파비콘
+
+- 웰컴 페이지
+    - index.html 찾아 보고 있으면 제공.
+    - index.템플릿 찾아 보고 있으면 제공.
+    - 둘 다 없으면 에러 페이지.
+
+일반적으로 spring boot run 실행 후 root 링크로 들어가면 보여지는 Error Page 상태를 
+index링크로 연결 시켜주는 행동
+
+1. 정적페이지로 보여주는 방법
+
+> /resources/static/index.html
+
+이제 error 표시가 아닌 Index.html 바로 접근하는것을 확인할 수 있습니다.
+
+파비콘 아이콘 동일하게 resources 폴더 내부 아무곳에 넣으면 표시됩니다.
+
+# thymeleaf
+
+- 스프링 부트가 자동 설정을 지원하는 템플릿 엔진
+    - FreeMarker
+    - Groovy
+    - Thymeleaf
+    - Mustache
+
+- JSP를 권장하지 않는 이유
+    - JAR 패키징 할 때는 동작하지 않고, WAR 패키징 해야 함.
+    - Undertow는 JSP를 지원하지 않음.
+    - https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-jsp-limitations
+
+의존성을 추가합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.2.2.RELEASE'
+~~~
+
+동적으로 생성되는 View 들은 src/main/resources/templates 위치에서 찾게 됩니다.
+
+Test Code 작성
+
+> SampleControllerTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@WebMvcTest(SampleController.class)
+public class SampleControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @Test
+    public void hello() throws Exception {
+        // 요청 "/hello"
+        // 응답
+        // - 모델 name : jjunpro
+        // - 뷰  이름  : jjunpro
+
+        mockMvc
+                .perform(get("/hello"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("hello"))
+                .andExpect(model().attribute("name", "jjunpro"))
+                .andDo(print());
+    }
+}
+~~~
+
+> SampleController.class
+
+~~~
+@Controller
+public class SampleController {
+
+    @GetMapping("/hello")
+    public String hello(Model model) {
+        model.addAttribute("name", "jjunpro");
+
+        return "hello";
+    }
+}
+~~~
+
+@RestController 가 아니기 때문에 
+더이상 응답의 본문의 내용이 return 값이 아닙니다.
+화면에 전달해야 하는 Model 데이터 정보들 간단하게 map 이라 생각하고 정보를
+담으면 됩니다.
+
+> /src/main/resources/templates/hello.html
+
+파일을 하나 생성 후 테스트를 실행합니다.
+
+~~~
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /hello
+       Parameters = {}
+          Headers = []
+             Body = <no character encoding set>
+    Session Attrs = {}
+
+Handler:
+             Type = me.whiteship.SampleController
+           Method = me.whiteship.SampleController#hello(Model)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = hello
+             View = null
+        Attribute = name
+            value = jjunpro
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Language:"en", Content-Type:"text/html;charset=UTF-8"]
+     Content type = text/html;charset=UTF-8
+             Body = <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+BUILD SUCCESSFUL in 7s
+~~~
+
+- Thymeleaf 사용하기
+    - https://www.thymeleaf.org/
+    - https://www.thymeleaf.org/doc/articles/standarddialect5minutes.html
+    - 의존성 추가: spring-boot-starter-thymeleaf
+    - 템플릿 파일 위치: /src/main/resources/template/
+    - 예제: https://github.com/thymeleaf/thymeleafexamples-stsm/blob/3.0-master/src/main/webapp/WEB-INF/templates/seedstartermng.html
+
+## View 정보 가져와 보여주기
+
+생성한 탬플릿 html 파일
+
+~~~
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1 th:text="${name}">NONE DATA</h1>
+</body>
+</html>
+~~~
+
+만약 name 값이 전달되어 오지않으면 NONE DATA를 출력합니다.
+
+Content 내용에 name 값이 정상 출력되는지 테스트 합니다.
+
+> SampleControllerTest.class
+
+~~~
+...
+    mockMvc
+            .perform(get("/hello"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("hello"))
+            .andExpect(model().attribute("name", "jjunpro"))
+            .andExpect(content().string(containsString("jjunpro")))
+            .andDo(print());
+...
+~~~
