@@ -85,6 +85,8 @@
     - [1. Spring MVC 예외처리 방법](#Spring-MVC-예외처리-방법)
     - [2. Spring Boot 예외처리 방법](#Spring-Boot-예외처리-방법)
     - [3. 커스텀 에러 페이지](#커스텀-에러-페이지)
+- [21. Spring HATEOAS](#Spring-HATEOAS)
+    - [1. HATEOAS 링크 추가](#HATEOAS-링크-추가)
 
 # Spring Boot 란 무엇인가
 
@@ -2618,3 +2620,170 @@ HTML 파일의 이름이 상태 코드값과 완전히 똑같거나 4xx || 5xx �
 400.html 파일을 생성합니다.
 
 # Spring HATEOAS
+
+Hypermedia As The Engine Of Application State
+
+REST(Representational State Transfer) API를 생성 할때 
+Representational 와 연관이 되어 있는 링크 정보들 까지 서버가 같이 제공을 하고 
+클라이언트는 같이 제공이 된 연관된 링크정보를 바탕으로 리소스에 접근을 하는것
+
+요청 URI가 변경되더라도 클라이언트에서 동적으로 생성된 URI를 사용함으로써, 
+`클라이언트가 URI 수정에 따른 코드를 변경하지 않아도 되는 편리함`을 제공합니다.
+
+의존성을 추가합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-hateoas', version: '2.2.2.RELEASE'
+~~~
+
+의존성을 추가하는 순간 스프링부트가 많은것을 자동 설정 해줍니다.
+
+- ObjectMapper 제공
+    - spring.jackson.*
+    - Jackson2ObjectMapperBuilder
+
+개발자가 제공하는 리소스의 타입을 JSON으로 변환할 때 사용
+
+- LinkDiscovers 제공
+    - 클라이언트 쪽에서 링크 정보를 Rel 이름으로 찾을때 사용할 수 있는 XPath 확장 클래스
+
+간단 예제
+
+> SampleController.class
+
+~~~
+@RestController
+public class SampleController {
+
+    @GetMapping("/hello")
+    public Hello hello() {
+        Hello hello = new Hello();
+        hello.setPrefix("hay~");
+        hello.setName("jjunpro!");
+        return hello;
+    }
+}
+~~~
+
+> Hello.class
+
+~~~
+public class Hello {
+    private String Prefix;
+    private String name;
+
+    // Getter, Setter, ToString
+}
+~~~
+
+> SampleControllerTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@WebMvcTest(SampleController.class)
+public class SampleControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @Test
+    public void hello() throws Exception {
+        mockMvc
+                .perform(get("/hello"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.self").exists())
+                .andDo(print());
+    }
+}
+~~~
+
+테스트를 실행하면 실패합니다. 
+이유는 Hello 객체가 링크 정보를 가지고 있지 않기 때문입니다.
+링크를 추가하겠습니다.
+
+## HATEOAS 링크 추가
+
+HATEOAS v1.0 이상 (Spring boot> = 2.2.0)을 사용하는 경우 클래스 이름이 변경되었습니다. 
+특히 아래 클래스의 이름이 변경되었습니다.
+
+ResourceSupport 로 변경 RepresentationModel
+Resource 로 변경 EntityModel
+Resources 로 변경 CollectionModel
+PagedResources 로 변경 PagedModel
+ResourceAssembler 로 변경 RepresentationModelAssembler
+자세한 내용은 https://docs.spring.io/spring-hateoas/docs/current/reference/html/ 
+공식 문서를 참조하십시오 .
+
+스프링 부트 스타터를 사용할 때 아래의 종속성은 HATEOAS를 포함하면 충분합니다.
+
+~~~
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-hateoas</artifactId>
+</dependency>
+~~~
+
+> SampleController.class
+
+~~~
+@RestController
+public class SampleController {
+
+    @GetMapping("/hello")
+    public EntityModel hello() {
+        Hello hello = new Hello();
+        hello.setPrefix("hay~");
+        hello.setName("jjunpro!");
+
+        // 링크를 추가하는 코드
+        EntityModel<Hello> helloResource = new EntityModel<>(hello);
+        helloResource.add(linkTo(methodOn(SampleController.class).hello()).withSelfRel());
+
+        return helloResource;
+    }
+}
+~~~
+
+methodOn(SampleController.class).hello() 링크 정보를 withSelfRel 만들어서 추가를 합니다.
+
+테스트를 실행합니다.
+
+~~~
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /hello
+       Parameters = {}
+          Headers = []
+             Body = <no character encoding set>
+    Session Attrs = {}
+
+Handler:
+             Type = me.whiteship.SampleController
+           Method = me.whiteship.SampleController#hello()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Type:"application/hal+json"]
+     Content type = application/hal+json
+             Body = {"name":"jjunpro!","prefix":"hay~","_links":{"self":{"href":"http://localhost/hello"}}}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+BUILD SUCCESSFUL in 2s
+~~~
