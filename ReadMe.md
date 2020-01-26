@@ -87,6 +87,9 @@
     - [3. 커스텀 에러 페이지](#커스텀-에러-페이지)
 - [21. Spring HATEOAS](#Spring-HATEOAS)
     - [1. HATEOAS 링크 추가](#HATEOAS-링크-추가)
+- [22. SOP과 CORS](#SOP과CORS)
+- [23. 인메모리 데이터베이스](#인메모리-데이터베이스)
+    - [1. H2 콘솔 사용하는 방법](#H2-콘솔-사용하는-방법)
 
 # Spring Boot 란 무엇인가
 
@@ -2838,3 +2841,77 @@ public class WebConfig implements WebMvcConfigurer {
     }
 }
 ~~~
+
+# 인메모리 데이터베이스
+
+- 지원하는 인-메모리 데이터베이스  
+    - H2 (추천, 콘솔 때문에...)
+    - HSQL
+    - Derby
+
+의존성을 추가합니다.
+
+~~~
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.2.3.RELEASE'
+
+    compile group: 'com.h2database', name: 'h2', version: '1.4.200'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.2.2.RELEASE'
+}
+~~~
+
+간단 예제
+
+> H2Runner.class
+
+~~~
+@Component
+public class H2Runner implements ApplicationRunner {
+
+    private Logger logger = LoggerFactory.getLogger(H2Runner.class);
+
+    @Autowired
+    DataSource dataSource;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        try (Connection connection = dataSource.getConnection()) {
+            // 접속할 DB의 정보 URL 정보와
+            String url = connection
+                    .getMetaData()
+                    .getURL();
+            // user 정보를 확인할 수 있습니다.
+            String username = connection
+                    .getMetaData()
+                    .getUserName();
+
+            logger.info(url + " <:> " + username);
+
+            Statement statement = connection.createStatement();
+            String    sql       = "CREATE TABLE USER(ID INTEGER NOT NULL, name VARCHAR(255), PRIMARY KEY (id))";
+            statement.executeUpdate(sql);
+        }
+
+        // jdbcTemplate 사용
+        jdbcTemplate.execute("INSERT INTO USER VALUES (1, 'jjunprop')");
+    }
+}
+~~~
+
+접속할 DB의 정보를 확인하는 위치는 DataSourceProperties.class > determineDatabaseName() 에서도 확인할 수 있습니다.
+
+기존 Jdbc 를 사용하는것 보다 코드가 간결하고 try catch 리소스 반납처리가 잘 되어 있으며
+jdbcTemplate 사용시 가독성이 높은 에러 메세지를 확인할 수 있습니다.
+
+## H2 콘솔 사용하는 방법
+
+spring-boot-devtools를 추가하거나...
+spring.h2.console.enabled=true 만 추가.
+/h2-console로 접속 (이 path도 바꿀 수 있음)
+
+JDBC URL: 값이 로거로 출력된 값인지 확인합니다. (jdbc:h2:mem:testdb)
