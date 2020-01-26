@@ -38,11 +38,11 @@ public class H2Runner implements ApplicationRunner {
             logger.info(url + "<:>" + username);
 
             Statement statement = connection.createStatement();
-            String    sql       = "CREATE TABLE USER(ID INTEGER NOT NULL, name VARCHAR(255), PRIMARY KEY (id))";
+            String    sql       = "CREATE TABLE TEST(ID INTEGER NOT NULL, name VARCHAR(255), PRIMARY KEY (id))";
             statement.executeUpdate(sql);
         }
 
         // jdbcTemplate 사용
-        jdbcTemplate.execute("INSERT INTO USER VALUES (1, 'jjunprop')");
+        // jdbcTemplate.execute("INSERT INTO USER VALUES (1, 'jjunprop')");
     }
 }

@@ -2915,3 +2915,134 @@ spring.h2.console.enabled=true 만 추가.
 /h2-console로 접속 (이 path도 바꿀 수 있음)
 
 JDBC URL: 값이 로거로 출력된 값인지 확인합니다. (jdbc:h2:mem:testdb)
+
+# MySQL
+
+JDBC는 Java DataBase Connectivity 의 약자로 자바에서 데이터베이스에 연결하기 위한 인터페이스
+DBCP는 DataBase Connection Pool 의 약자로 DB와 커넥션을 맺고 있는 객체를 관리하는 역할
+
+1. DB 접속을 위한 JDBC 드라이버 로드
+2. getConnection Method로 부터 DB 커넥션 객체를 얻음
+3. 쿼리 수행을 위한 PreparedStatement 객체 생성
+4. excuteQuery를 실행해서 결과를 받아옴.
+
+여기서 비효율적인 부분은 1번과 2번 입니다.
+DB 연결 시 마다 Driver를 로드하고 커넥션 객체를 얻는 작업을 반복하죠.
+이 부분을 효율적으로 처리하도록 바꾸는 것이 DBCP의 역할 입니다.
+
+DBCP를 사용하게 되면,
+WAS 실행 시 미리 일정량의 DB Connection 객체를 생성하고 Pool 이라는 공간에 저장해 둡니다.
+그리고 DB 연결 요청이 있으면, 이 Pool 이라는 공간에서 Connection 객체를 가져다 쓰고 반환 하게 됩니다.
+
+DBCP를 사용하므로써 설정할 수 있는 옵션은 아래와 같습니다.
+
+maxActive : 동시에 사용할 수 있는 최대 커넥션 개수
+maxIdle : Connection Pool에 반납할 때 최대로 유지될 수 있는 커넥션 개수
+minIdle : 최소한으로 유지할 커넥션 개수
+initialSize : 최소로 getConnection() Method를 통해 커넥션 풀에 채워 넣을 커넥션 개수
+
+- 지원하는 DBCP
+    - HikariCP (기본)
+        - https://github.com/brettwooldridge/HikariCP#frequently-used
+    - Tomcat CP
+    - Commons DBCP2
+
+- DBCP 설정
+    - spring.datasource.hikari.*
+    - spring.datasource.tomcat.*
+    - spring.datasource.dbcp2.*
+
+MySQL 사용하려면 의존성을 추가합니다.
+MySQL 커넥터를 추가하였습니다.
+
+~~~
+compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
+~~~
+
+# PostgreSQL
+
+## PostgreSQL 설치 및 서버 실행 (local)
+
+PostgreSQL 설치방법
+> https://postgresapp.com/
+
+생선된 DATABASE 선택 
+
+> \connect ${database}
+
+- USER 조회
+유저를 생성하기 위해서는 먼저 DATABASE에서 SUPERUSER권한을 가지고 있어야 합니다. PostgreSQL에 SUPERUSER의 default 계정은 postgres입니다.
+
+SELECT * FROM PG_SHADOW; 혹은 \du
+
+\du를 입력하면 USER들이 가지고 있는 ROLE들을 확인 할 수 있습니다. SUPERUSER인 postgres는 SUPERUSER, CREATE ROLE, CREATE DB, REPLICATION기능을 가지고 있습니다.
+
+- ROLE 기능
+    - SUPERUSER	USER들을 생성하고 권한을 부여해 주는 USER
+    - CREATE ROLE	USER가 새로운 ROLE을 정의하는 기능을 생성
+    - CREATE DB	USER가 DB를 생성하는 권한을 부여하는 기능
+    - REPLICATION	USER가 DB를 실시간으로 복사하는 기능
+
+- CREATE USER
+
+~~~
+CREATE USER username [[ WITH ] option [ ... ]]
+where option can be:
+~~~
+
+유저를 생성할 때는 CREATE USER ‘username’을 입력하여 USER를 생성합니다. username 뒤에는 여러 가지 option이 추가될 수 있습니다.
+
+option은 다음과 같습니다.
+
+- SUPERUSER | NOSUPERUSER	
+    - 해당 USER를 SUPERUSER권한을 주는 것입니다. 따로 지정하지 않을 경우 DEFAULT값으로 NOSUPERUSER가 됩니다.
+- CREATEDB | NOCREATEDB	
+    - DATABASE를 생성하는 권한을 정의합니다.
+    - CREATEDB를 선택할 경우 USER는 DATABASE를 생성할 권한이 부여됩니다.
+    - NOCREATEDB를 선택할 경우 USER는 DATABASE를 생성할 권한이 거부됩니다.
+    - 따로 정의 되어있지 않을 경우 NOCREATEDB값이 default값으로 설정 되어 있습니다.
+- CREATEUSER | NOCREATEUSER	
+    - 스스로 새로운 유저를 생성하는 권한을 부여하는 것을 정의합니다.
+    - CREATEUSER를 선택할 경우 USER를 생성할 수 있는 권한이 부여됩니다.
+    - NOCREATEUSER를 선택할 경우 USER를 생성할 권한이 거부됩니다.
+- INHERIT | NOINHERIT	
+    - DATABASE의 권한을 다른 구성원들에게 상속하는 역할을 합니다.
+    - 따로 정의 되어있지 않을 경우 INHERIT 값이 default값으로 설정 되어 있습니다.
+- LOGIN | NOLIGIN	
+    - USER가 LOGIN을 하는 역할을 부여한다.
+    - CONNECTION LIMIT connlimit	로그인 할 때 동시연결을 지원 하는 기능으로 default값으로 -1(제한없음)로 설정 되어 있습니다.
+- [ENCRYPTED | UNCRYPTED ]
+    - PASSWORD 'password'’	‘password’를 입력하고 인증이 필요 없는 경우 옵션을 생략이 가능합니다.
+
+[User 와 DB생성 권한 설정 예제]
+
+~~~
+CREATE USER TEST3 PASSWORD 'TEST3' CREATEDB;
+~~~
+
+의존성 추가
+
+https://mvnrepository.com/artifact/org.postgresql/postgresql/42.2.5
+
+~~~
+compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+~~~
+
+## PostgreSQL 설치 및 서버 실행 (docker)
+
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=pass -e POSTGRES_USER=keesun -e POSTGRES_DB=springboot --name postgres_boot -d postgres
+
+docker exec -i -t postgres_boot bash
+
+su - postgres
+
+psql springboot
+
+데이터베이스 조회
+\list
+
+테이블 조회
+\dt
+
+쿼리
+SELECT * FROM account;
