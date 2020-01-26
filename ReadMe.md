@@ -52,6 +52,7 @@
     - [4. 중복의 프로퍼티 관리](#중복의-프로퍼티-관리)
     - [5. application.properties 위치](#application.properties-위치)
     - [6. @Value("")](#@Value(""))
+    - [7. 프러퍼티 값이 없다면](#프러퍼티-값이-없다면)
 - [10. 외부 설정 2부](#외부-설정-2부)
     - [1. 프로퍼티 Bean 등록 방법](#프로퍼티-Bean-등록-방법)
     - [2. 프로퍼티 값 검증](#프로퍼티-값-검증)
@@ -80,6 +81,10 @@
     - [2. 리소스 핸들러 커스텀마이징](#리소스-핸들러-커스텀마이징)
 - [19. thymeleaf](#thymeleaf)
     - [1. View 정보 가져와 보여주기](#View-정보-가져와-보여주기)
+- [20. ExceptionHandler](#ExceptionHandler)
+    - [1. Spring MVC 예외처리 방법](#Spring-MVC-예외처리-방법)
+    - [2. Spring Boot 예외처리 방법](#Spring-Boot-예외처리-방법)
+    - [3. 커스텀 에러 페이지](#커스텀-에러-페이지)
 
 # Spring Boot 란 무엇인가
 
@@ -1003,6 +1008,14 @@ jjunpro.name = jjunpro
 설정된 값을 가져오는 방법
 
 [Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config)
+
+## 프러퍼티 값이 없다면
+
+@Value("${server.error.path:${error.path:/error}}")
+
+server.error.path 가 없다면 error.path 를
+error.path 도 없다면 /error 를 
+사용한다는 프로퍼티 작성방법
 
 ## @Value("")
 
@@ -2509,3 +2522,99 @@ Content 내용에 name 값이 정상 출력되는지 테스트 합니다.
             .andDo(print());
 ...
 ~~~
+
+# ExceptionHandler
+
+[Error Handling](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-error-handling)
+
+Spring Boot 프로젝트를 실행 후
+인터넷으로 http://localhost:8080 접근 또는
+터미널으러 curl http://localhost:8080 으로 접속하면 표시되는 에러가
+
+스프링 부트가 제공하는 기본 예외 처리기 `BasicErrorController` 에서 출력됩니다.
+HTML과 JSON 응답 지원
+
+이런 에러를 커스텀하여 직접 사용할 수 있습니다. 
+
+## Spring MVC 예외처리 방법
+
+- 스프링 @MVC 예외 처리 방법
+    - @ControllerAdvice
+    - @ExceptionHandler
+
+간단 예제
+
+컨트롤러 생성
+
+> SampleController.class
+
+~~~
+@Controller
+public class SampleController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        throw new SampleExcepion();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(SampleExcepion.class)
+    public AppError sampleError(SampleExcepion e) {
+        AppError appError = new AppError();
+        appError.setMessage("error.app.key");
+        appError.setReason("NONE");
+        return appError;
+    }
+}
+~~~
+
+> SampleExcepion.class
+
+~~~
+public class SampleExcepion extends RuntimeException { }
+~~~
+
+> AppError.class
+
+~~~
+public class AppError {
+    private String message;
+    private String reason;
+
+    // Getter, Setter
+}
+~~~
+
+터미널 결과를 확인합니다.
+
+~~~
+curl http://localhost:8080/hello
+result > {"message":"error.app.key","reason":"NONE"}
+~~~
+
+sampleError 메소드는 해당 컨트롤러에서만 사용 가능합니다.
+해당 메소드를 전역적으로 사용하려면 클래스를 따로 만든 후 어노테이션 ControllerAdvice 붙여주면 사용 가능합니다.
+
+## Spring Boot 예외처리 방법
+
+- BasicErrorController
+    - HTML과 JSON 응답 지원
+- 커스터마이징 방법
+    - ErrorController 구현
+
+## 커스텀 에러 페이지
+
+상태 코드 값에 따라 에러 페이지 보여주기
+src/main/resources/static|template/error/
+404.html
+5xx.html
+ErrorViewResolver 구현
+
+에러가 발생했을 때 응답의 상태값에 따라서 다른 웹 페이지를 보여주는 경우에 
+
+> /resoures/static/error 혹은 /resoures/static/templates/error
+
+HTML 파일의 이름이 상태 코드값과 완전히 똑같거나 4xx || 5xx 식으로 만들어도 됩니다.
+400.html 파일을 생성합니다.
+
+# Spring HATEOAS
