@@ -2787,3 +2787,54 @@ MockHttpServletResponse:
           Cookies = []
 BUILD SUCCESSFUL in 2s
 ~~~
+
+# SOP과 CORS
+
+- Single-Origin Policy (같은 곳에서만 요청을 보낼 수 있다.)
+- Cross-Origin Resource Sharing
+- Origin 이란?
+    - URI 스키마 (http, https)
+    - hostname (whiteship.me, localhost)
+    - 포트 (8080, 18080)
+
+Single-Origin Policy 를 우회하기 위한 표준 기술
+
+서버를 두개 만든 후 한쪽서버에서 다른쪽 서버의 접근을 하면
+
+~~~
+Access to XMLHttpRequest at 'http://localhost:8080/hello' from origin 'http://localhost:18080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+~~~
+
+다음과 같은 에러가 발생합니다.
+
+Cross-Origin을 해주기 위해서 어노테이션을 사용하는 방법
+
+> project-1/SampleController.class
+
+~~~
+@RestController
+public class SampleController {
+
+    @GetMapping("/hello")
+    @CrossOrigin("http://localhost:18080")
+    public String hello() {
+        return "hello";
+    }
+}
+~~~
+
+전역에서 사용하려면 Config를 생성하여 설정합니다.
+
+> WebConfig.class
+
+~~~
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry
+                .addMapping("/**")
+                .allowedOrigins("http://localhost:18080");
+    }
+}
+~~~
