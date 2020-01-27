@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.whiteship.account.AccountRepositoryTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2020-01-27T10:14:34" hostname="gimminseog-ui-MacBookPro.local" time="0.279">
+  <properties/>
+  <testcase name="findByEmail" classname="me.whiteship.account.AccountRepositoryTest" time="0.279">
+    <failure message="org.springframework.data.mongodb.UncategorizedMongoDbException: Query failed with error code 2 and error message 'Field 'locale' is invalid in: { locale: &quot;accounts&quot; }' on server localhost:54231; nested exception is com.mongodb.MongoQueryException: Query failed with error code 2 and error message 'Field 'locale' is invalid in: { locale: &quot;accounts&quot; }' on server localhost:54231" type="org.springframework.data.mongodb.UncategorizedMongoDbException">org.springframework.data.mongodb.UncategorizedMongoDbException: Query failed with error code 2 and error message 'Field 'locale' is invalid in: { locale: &quot;accounts&quot; }' on server localhost:54231; nested exception is com.mongodb.MongoQueryException: Query failed with error code 2 and error message 'Field 'locale' is invalid in: { locale: &quot;accounts&quot; }' on server localhost:54231
+	at org.springframework.data.mongodb.core.MongoExceptionTranslator.translateExceptionIfPossible(MongoExceptionTranslator.java:138)
+	at org.springframework.data.mongodb.core.MongoTemplate.potentiallyConvertRuntimeException(MongoTemplate.java:2902)
+	at org.springframework.data.mongodb.core.MongoTemplate.executeFindMultiInternal(MongoTemplate.java:2810)
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:2555)
+	at org.springframework.data.mongodb.core.ExecutableFindOperationSupport$ExecutableFindSupport.doFind(ExecutableFindOperationSupport.java:215)
+	at org.springframework.data.mongodb.core.ExecutableFindOperationSupport$ExecutableFindSupport.oneValue(ExecutableFindOperationSupport.java:127)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery.lambda$getExecution$4(AbstractMongoQuery.java:153)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery.doExecute(AbstractMongoQuery.java:126)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery.execute(AbstractMongoQuery.java:101)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.doInvoke(RepositoryFactorySupport.java:618)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:605)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:80)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:95)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:212)
+	at com.sun.proxy.$Proxy63.findByUsername(Unknown Source)
+	at me.whiteship.account.AccountRepositoryTest.findByEmail(AccountRepositoryTest.java:33)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.springframework.test.context.junit4.statements.RunBeforeTestExecutionCallbacks.evaluate(RunBeforeTestExecutionCallbacks.java:74)
+	at org.springframework.test.context.junit4.statements.RunAfterTestExecutionCallbacks.evaluate(RunAfterTestExecutionCallbacks.java:84)
+	at org.springframework.test.context.junit4.statements.RunBeforeTestMethodCallbacks.evaluate(RunBeforeTestMethodCallbacks.java:75)
+	at org.springframework.test.context.junit4.statements.RunAfterTestMethodCallbacks.evaluate(RunAfterTestMethodCallbacks.java:86)
+	at org.springframework.test.context.junit4.statements.SpringRepeat.evaluate(SpringRepeat.java:84)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:251)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:97)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:70)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:190)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:110)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Caused by: com.mongodb.MongoQueryException: Query failed with error code 2 and error message 'Field 'locale' is invalid in: { locale: &quot;accounts&quot; }' on server localhost:54231
+	at com.mongodb.operation.FindOperation$1.call(FindOperation.java:735)
+	at com.mongodb.operation.FindOperation$1.call(FindOperation.java:725)
+	at com.mongodb.operation.OperationHelper.withReadConnectionSource(OperationHelper.java:463)
+	at com.mongodb.operation.FindOperation.execute(FindOperation.java:725)
+	at com.mongodb.operation.FindOperation.execute(FindOperation.java:89)
+	at com.mongodb.client.internal.MongoClientDelegate$DelegateOperationExecutor.execute(MongoClientDelegate.java:189)
+	at com.mongodb.client.internal.MongoIterableImpl.execute(MongoIterableImpl.java:143)
+	at com.mongodb.client.internal.MongoIterableImpl.iterator(MongoIterableImpl.java:92)
+	at org.springframework.data.mongodb.core.MongoTemplate.executeFindMultiInternal(MongoTemplate.java:2793)
+	... 71 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[19:14:32.430 [Test worker] DEBUG org.springframework.test.context.junit4.SpringJUnit4ClassRunner - SpringJUnit4ClassRunner constructor called with [class me.whiteship.account.AccountRepositoryTest]
+19:14:32.438 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating CacheAwareContextLoaderDelegate from class [org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate]
+19:14:32.443 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating BootstrapContext using constructor [public org.springframework.test.context.support.DefaultBootstrapContext(java.lang.Class,org.springframework.test.context.CacheAwareContextLoaderDelegate)]
+19:14:32.474 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating TestContextBootstrapper for test class [me.whiteship.account.AccountRepositoryTest] from class [org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper]
+19:14:32.487 [Test worker] INFO org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [me.whiteship.account.AccountRepositoryTest], using SpringBootContextLoader
+19:14:32.490 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [me.whiteship.account.AccountRepositoryTest]: class path resource [me/whiteship/account/AccountRepositoryTest-context.xml] does not exist
+19:14:32.491 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [me.whiteship.account.AccountRepositoryTest]: class path resource [me/whiteship/account/AccountRepositoryTestContext.groovy] does not exist
+19:14:32.491 [Test worker] INFO org.springframework.test.context.support.AbstractContextLoader - Could not detect default resource locations for test class [me.whiteship.account.AccountRepositoryTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+19:14:32.492 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [me.whiteship.account.AccountRepositoryTest]: AccountRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:14:32.537 [Test worker] DEBUG org.springframework.test.context.support.ActiveProfilesUtils - Could not find an 'annotation declaring class' for annotation type [org.springframework.test.context.ActiveProfiles] and class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.585 [Test worker] DEBUG org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider - Identified candidate component class: file [/Users/kimminseok/Documents/git-repository/Java-spring-boot/MongoDB/project/build/classes/java/main/me/whiteship/Application.class]
+19:14:32.586 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration me.whiteship.Application for test class me.whiteship.account.AccountRepositoryTest
+19:14:32.587 [Test worker] DEBUG org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper - @TestExecutionListeners is not present for class [me.whiteship.account.AccountRepositoryTest]: using defaults.
+19:14:32.588 [Test worker] INFO org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+19:14:32.593 [Test worker] DEBUG org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper - Skipping candidate TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener] due to a missing dependency. Specify custom listener classes or make the default listener classes and their required dependencies available. Offending class: [javax/servlet/ServletContext]
+19:14:32.598 [Test worker] INFO org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@3d9a63ec, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@354404c2, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@1ff3e6f0, org.springframework.test.context.support.DirtiesContextTestExecutionListener@2eae4c6d, org.springframework.test.context.transaction.TransactionalTestExecutionListener@4045cf57, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@5532b189, org.springframework.test.context.event.EventPublishingTestExecutionListener@557619b9, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@9e7ea5e, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@67b6b342, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@27c8e8c4, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@42168655, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@74152153]
+19:14:32.601 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.601 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.603 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.603 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.604 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.604 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.606 [Test worker] DEBUG org.springframework.test.context.support.AbstractDirtiesContextTestExecutionListener - Before test class: context [DefaultTestContext@13f2d28a testClass = AccountRepositoryTest, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [MergedContextConfiguration@f628d71 testClass = AccountRepositoryTest, locations = '{}', classes = '{class me.whiteship.Application}', contextInitializerClasses = '[]', activeProfiles = '{}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper=true}', contextCustomizers = set[org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@7d71500f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@351584c0, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@ff64e320, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@83971f2, [ImportsContextCustomizer@734bd9eb key = [org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoReactiveRepositoriesAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration, org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration, org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@7c99da51, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@177354a6, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0], contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map[[empty]]], class annotated with @DirtiesContext [false] with mode [null].
+19:14:32.607 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.608 [Test worker] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [me.whiteship.account.AccountRepositoryTest]
+19:14:32.610 [Test worker] DEBUG org.springframework.test.context.support.DependencyInjectionTestExecutionListener - Performing dependency injection for test context [[DefaultTestContext@13f2d28a testClass = AccountRepositoryTest, testInstance = me.whiteship.account.AccountRepositoryTest@45d0bab9, testMethod = [null], testException = [null], mergedContextConfiguration = [MergedContextConfiguration@f628d71 testClass = AccountRepositoryTest, locations = '{}', classes = '{class me.whiteship.Application}', contextInitializerClasses = '[]', activeProfiles = '{}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper=true}', contextCustomizers = set[org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@7d71500f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@351584c0, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@ff64e320, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@83971f2, [ImportsContextCustomizer@734bd9eb key = [org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoReactiveRepositoriesAutoConfiguration, org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration, org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration, org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@7c99da51, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@177354a6, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0], contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map[[empty]]]].
+19:14:32.681 [Test worker] DEBUG org.springframework.test.context.support.TestPropertySourceUtils - Adding inlined properties to environment: {spring.jmx.enabled=false, org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTestContextBootstrapper=true, server.port=-1}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v2.2.4.RELEASE)
+
+2020-01-27 19:14:32.870  INFO 4373 --- [    Test worker] m.w.account.AccountRepositoryTest        : Starting AccountRepositoryTest on gimminseog-ui-MacBookPro.local with PID 4373 (started by kimminseok in /Users/kimminseok/Documents/git-repository/Java-spring-boot/MongoDB/project)
+2020-01-27 19:14:32.872  INFO 4373 --- [    Test worker] m.w.account.AccountRepositoryTest        : No active profile set, falling back to default profiles: default
+2020-01-27 19:14:33.062  INFO 4373 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2020-01-27 19:14:33.099  INFO 4373 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 34ms. Found 1 MongoDB repository interfaces.
+2020-01-27 19:14:33.796  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : note: noprealloc may hurt performance in many applications
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] MongoDB starting : pid=4374 port=54231 dbpath=/var/folders/tw/z0nxsbm95rl8h8gw78mzxh4h0000gn/T/embedmongo-db-beb86bf3-ff76-43e5-afaa-bcd5537d460e 64-bit host=gimminseog-ui-MacBookPro.local
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] db version v3.5.5
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] git version: 98515c812b6fa893613f063dae568ff8319cbfbd
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] allocator: system
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] modules: none
+2020-01-27 19:14:33.802  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] build environment:
+2020-01-27 19:14:33.803  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten]     distarch: x86_64
+2020-01-27 19:14:33.803  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten]     target_arch: x86_64
+2020-01-27 19:14:33.803  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.801+0900 I CONTROL  [initandlisten] options: { net: { bindIp: "127.0.0.1", http: { enabled: false }, port: 54231 }, security: { authorization: "disabled" }, storage: { dbPath: "/var/folders/tw/z0nxsbm95rl8h8gw78mzxh4h0000gn/T/embedmongo-db-beb86bf3-ff76-43e5-afaa-bcd5537d460e", journal: { enabled: false }, mmapv1: { preallocDataFiles: false, smallFiles: true }, syncPeriodSecs: 0.0 } }
+2020-01-27 19:14:33.803  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.802+0900 I STORAGE  [initandlisten] wiredtiger_open config: create,cache_size=32256M,session_max=20000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,archive=true,path=journal,compressor=snappy),file_manager=(close_idle_time=100000),checkpoint=(wait=0,log_size=2GB),statistics_log=(wait=0),verbose=(recovery_progress),,log=(enabled=false),
+2020-01-27 19:14:33.926  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.926+0900 W STORAGE  [initandlisten] Detected configuration for non-active storage engine mmapv1 when current storage engine is wiredTiger
+2020-01-27 19:14:33.926  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.926+0900 I CONTROL  [initandlisten] 
+2020-01-27 19:14:33.926  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.926+0900 I CONTROL  [initandlisten] ** NOTE: This is a development version (3.5.5) of MongoDB.
+2020-01-27 19:14:33.927  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.926+0900 I CONTROL  [initandlisten] **       Not recommended for production.
+2020-01-27 19:14:33.927  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.926+0900 I CONTROL  [initandlisten] 
+2020-01-27 19:14:33.977  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:33.977+0900 I FTDC     [initandlisten] Initializing full-time diagnostic data capture with directory '/var/folders/tw/z0nxsbm95rl8h8gw78mzxh4h0000gn/T/embedmongo-db-beb86bf3-ff76-43e5-afaa-bcd5537d460e/diagnostic.data'
+2020-01-27 19:14:34.060  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.060+0900 I INDEX    [initandlisten] build index on: admin.system.version properties: { v: 2, key: { version: 1 }, name: "incompatible_with_version_32", ns: "admin.system.version" }
+2020-01-27 19:14:34.060  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.060+0900 I INDEX    [initandlisten] 	 building index using bulk method; build may temporarily use up to 500 megabytes of RAM
+2020-01-27 19:14:34.064  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.064+0900 I INDEX    [initandlisten] build index done.  scanned 0 total records. 0 secs
+2020-01-27 19:14:34.064  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.064+0900 I COMMAND  [initandlisten] setting featureCompatibilityVersion to 3.4
+2020-01-27 19:14:34.065  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.064+0900 I NETWORK  [thread1] waiting for connections on port 54231
+2020-01-27 19:14:34.065  INFO 4373 --- [    Test worker] d.f.embed.mongo.MongodExecutable         : start de.flapdoodle.embed.mongo.config.MongodConfigBuilder$ImmutableMongodConfig@4b02bd4c
+2020-01-27 19:14:34.213  INFO 4373 --- [    Test worker] org.mongodb.driver.cluster               : Cluster created with settings {hosts=[localhost:54231], mode=MULTIPLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2020-01-27 19:14:34.213  INFO 4373 --- [    Test worker] org.mongodb.driver.cluster               : Adding discovered server localhost:54231 to client view of cluster
+2020-01-27 19:14:34.238  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.237+0900 I NETWORK  [thread1] connection accepted from 127.0.0.1:54240 #1 (1 connection now open)
+2020-01-27 19:14:34.245  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.244+0900 I NETWORK  [conn1] received client metadata from 127.0.0.1:54240 conn1: { driver: { name: "mongo-java-driver|legacy", version: "3.11.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "10.15.2" }, platform: "Java/JetBrains s.r.o/11.0.5+10-b520.30" }
+2020-01-27 19:14:34.255  INFO 4373 --- [localhost:54231] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:1}] to localhost:54231
+2020-01-27 19:14:34.257  INFO 4373 --- [localhost:54231] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=localhost:54231, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 5, 5]}, minWireVersion=0, maxWireVersion=5, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=null, roundTripTimeNanos=1049771}
+2020-01-27 19:14:34.258  INFO 4373 --- [localhost:54231] org.mongodb.driver.cluster               : Discovered cluster type of STANDALONE
+2020-01-27 19:14:34.509  INFO 4373 --- [    Test worker] m.w.account.AccountRepositoryTest        : Started AccountRepositoryTest in 1.825 seconds (JVM running for 2.628)
+2020-01-27 19:14:34.554  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.554+0900 I NETWORK  [thread1] connection accepted from 127.0.0.1:54241 #2 (2 connections now open)
+2020-01-27 19:14:34.554  INFO 4373 --- [       Thread-4] o.s.b.a.mongo.embedded.EmbeddedMongo     : 2020-01-27T19:14:34.554+0900 I NETWORK  [conn2] received client metadata from 127.0.0.1:54241 conn2: { driver: { name: "mongo-java-driver|legacy", version: "3.11.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "10.15.2" }, platform: "Java/JetBrains s.r.o/11.0.5+10-b520.30" }
+2020-01-27 19:14:34.556  INFO 4373 --- [    Test worker] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:2}] to localhost:54231
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

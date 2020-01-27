@@ -3046,3 +3046,335 @@ psql springboot
 
 쿼리
 SELECT * FROM account;
+
+# Redis
+
+의존성을 추가합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis', version: '2.2.4.RELEASE'
+~~~
+
+- Redis 설치 및 실행 (도커)
+    - docker run -p 6379:6379 --name redis_boot -d redis
+    - docker exec -i -t redis_boot redis-cli
+
+- 스프링 데이터 Redis
+    - https://projects.spring.io/spring-data-redis/
+    - StringRedisTemplate 또는 RedisTemplate
+    - extends CrudRepository
+
+간단 예제
+
+> RedisRunner.class
+
+~~~
+@Component
+public class RedisRunner implements ApplicationRunner {
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+        operations.set("jjunpro", "whiteship");
+        operations.set("springboot", "2.0");
+    }
+}
+~~~
+
+docker 에서 값을 확인하면 key, value 값이 확인이 됩니다.
+
+## repository 사용법
+
+> Account.class
+
+~~~
+@RedisHash("accounts")
+public class Account {
+    @Id
+    private Long id;
+    private String username;
+    private String email;
+    
+    // getter, setter
+~~~
+
+> AccountRepository.interface
+
+~~~
+public interface AccountRepository extends CrudRepository<Account, Long> { }
+~~~
+
+> RedisRunner.class
+
+~~~
+@Component
+public class RedisRunner implements ApplicationRunner {
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+        operations.set("jjunpro", "whiteship");
+        operations.set("springboot", "2.0");
+
+        Account account = new Account();
+        account.setEmail("jjunpro@git.com");
+        account.setUsername("jjunpro");
+
+        accountRepository.save(account);
+
+        Optional<Account> result = accountRepository.findById(account.getId());
+        System.out.println(result.get().getId());
+        System.out.println(result.get().getEmail());
+        System.out.println(result.get().getUsername() );
+    }
+}
+~~~
+
+db를 확인하면 
+~~~
+127.0.0.1:6379> keys *
+1) "jjunpro"
+2) "springboot"
+3) "accounts"
+4) "accounts:-7880004226424888311"
+~~~
+정상 등록 됩니다.
+
+아무런 설정 없이도 Redis 를 연결하여 사용한 이유는 Spring Boot의 기본 6379포트를 사용해서 그렇습니다. 
+
+만약 외부 db를 사용한다면 프로퍼티에서 설정을 바꿔야 합니다.
+
+spring.redis.url = ${url}
+
+# MongoDB
+
+MongoDB는 JSON 기반의 도큐먼트 데이터베이스입니다.
+스키마가 없습니다.
+
+의존성을 추가합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb', version: '2.2.4.RELEASE'
+~~~
+
+- MongoDB 설치 및 실행 (도커)
+    - docker run -p 27017:27017 --name mongo_boot -d mongo
+    - docker exec -i -t mongo_boot bash
+    - mongo
+
+간단 예제
+
+> /account/account.class
+
+~~~
+// collation SQL로 치면 table
+@Document(collation = "accounts")
+public class Account {
+    @Id
+    private String id;
+    private String username;
+    private String email;
+
+    // getter, setter
+}
+~~~
+
+> Application.class
+
+~~~
+@SpringBootApplication
+public class Application {
+
+    @Autowired
+    MongoTemplate mongoTemplate;
+
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(Application.class);
+        app.run(args);
+    }
+
+    @Bean
+    public ApplicationRunner applicationRunner() {
+        return args -> {
+            Account account = new Account();
+            account.setUsername("jjunpro");
+            account.setEmail("jjunpro@git.com");
+
+            mongoTemplate.insert(account);
+
+            System.out.println("insert ok!");
+        };
+    }
+}
+~~~
+
+db 확인
+
+~~~
+> db.account.find({})
+{ "_id" : ObjectId("5e2eb0d48850915240033bcb"), "username" : "jjunpro", "email" : "jjunpro@git.com", "_class" : "me.whiteship.account.Account" }
+~~~
+
+## repository 사용법
+
+> AccountRepository.interface
+
+~~~
+public interface AccountRepository extends MongoRepository<Account, String> { }
+~~~
+
+~~~
+...
+@Autowired
+AccountRepository accountRepository;
+
+@Bean
+public ApplicationRunner applicationRunner() {
+    return args -> {
+        Account account = new Account();
+        account.setUsername("jjunpro");
+        account.setEmail("jjunpro@git.com");
+
+        accountRepository.insert(account);
+    };
+}
+...
+~~~
+
+## 내장형 MongoDB (테스트용)
+
+의존성 추가
+
+~~~
+testCompile group: 'de.flapdoodle.embed', name: 'de.flapdoodle.embed.mongo', version: '2.2.0'
+~~~
+
+> AccountRepositoryTest.class
+
+~~~
+@RunWith(SpringRunner.class)
+@DataMongoTest  // mongo 관련된 bean 등만 등록이 됩니다.
+public class AccountRepositoryTest {
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Test
+    public void findByEmail() {
+        Account account = new Account();
+        account.setEmail("jjunpro@git.com");
+        account.setUsername("jjunpro");
+
+        accountRepository.save(account);
+
+        Optional<Account> resultId = accountRepository.findById(account.getId());
+        assertThat(resultId).isNotEmpty();
+    }
+}
+~~~
+
+# Actuator
+
+actuator는 시스템을 움직이거나 제어하는 데 쓰이는 기계 장치
+
+애플리케이션의 각종 정보를 확인할 수 있는 Endpoints
+다양한 Endpoints 제공.
+JMX 또는 HTTP를 통해 접근 가능 함.
+shutdown을 제외한 모든 Endpoint는 기본적으로 활성화 상태.
+활성화 옵션 조정
+management.endpoints.enabled-by-default=false
+management.endpoint.info.enabled=true
+
+의존성을 추가합니다.
+
+~~~
+compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.2.2.RELEASE'
+~~~
+
+[엔드 포인트](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready-endpoints)
+
+에플리케이션 실행 후 주소 접속
+
+> http://localhost:8080/actuator
+
+다음과 같은 정보가 나옵니다.
+
+~~~
+{
+_links: {
+self: {
+href: "http://localhost:8080/actuator",
+templated: false
+},
+health: {
+href: "http://localhost:8080/actuator/health",
+templated: false
+},
+health-path: {
+href: "http://localhost:8080/actuator/health/{*path}",
+templated: true
+},
+info: {
+href: "http://localhost:8080/actuator/info",
+templated: false
+}
+}
+}
+~~~
+
+## JConsole 사용하기
+
+https://docs.oracle.com/javase/tutorial/jmx/mbeans/
+https://docs.oracle.com/javase/7/docs/technotes/guides/management/jconsole.html
+
+cmd > jconsole 입력
+
+실행중인 에플리케이션 연결하면 여러가지 정보가 출력됩니다.
+
+## VisualVM 사용하기
+
+https://visualvm.github.io/download.html
+
+## HTTP 사용하기
+
+- /actuator
+- health와 info를 제외한 대부분의 Endpoint가 기본적으로 비공개 상태
+- 공개 옵션 조정
+    - management.endpoints.web.exposure.include=*
+    - management.endpoints.web.exposure.exclude=env,beans
+
+## 스프링 부트 어드민
+
+https://github.com/codecentric/spring-boot-admin 
+스프링 부트 Actuator UI 제공 어드민 서버 설정
+
+~~~
+<dependency>
+  <groupId>de.codecentric</groupId>
+  <artifactId>spring-boot-admin-starter-server</artifactId>
+  <version>2.0.1</version>
+</dependency>
+~~~
+
+@EnableAdminServer
+클라이언트 설정
+
+~~~
+<dependency>
+  <groupId>de.codecentric</groupId>
+  <artifactId>spring-boot-admin-starter-client</artifactId>
+  <version>2.0.1</version>
+</dependency>
+~~~
+
+spring.boot.admin.client.url=http://localhost:8080
+management.endpoints.web.exposure.include=*
